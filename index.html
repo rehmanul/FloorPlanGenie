@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FloorPlanGenie - Interactive Floor Plan Editor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🏠 FloorPlanGenie</h1>
+        <div class="toolbar">
+            <button id="wallTool" class="tool-btn active">📏 Wall</button>
+            <button id="roomTool" class="tool-btn">🏠 Room</button>
+            <button id="doorTool" class="tool-btn">🚪 Door</button>
+            <button id="windowTool" class="tool-btn">🪟 Window</button>
+            <button id="furnitureTool" class="tool-btn">🛋️ Furniture</button>
+            <button id="clearBtn" class="tool-btn danger">🗑️ Clear</button>
+            <button id="exportBtn" class="tool-btn success">💾 Export</button>
+        </div>
+    </header>
+
+    <main>
+        <div class="editor-container">
+            <div class="sidebar">
+                <div class="panel">
+                    <h3>Tools</h3>
+                    <div class="tool-options">
+                        <div id="wallOptions" class="options-group active">
+                            <label>Wall Length: <span id="wallLength">0</span>ft</label>
+                            <input type="range" id="wallLengthSlider" min="1" max="30" value="10">
+                        </div>
+                        <div id="roomOptions" class="options-group">
+                            <label>Room Type:</label>
+                            <select id="roomType">
+                                <option value="bedroom">Bedroom</option>
+                                <option value="kitchen">Kitchen</option>
+                                <option value="bathroom">Bathroom</option>
+                                <option value="living">Living Room</option>
+                                <option value="office">Office</option>
+                            </select>
+                        </div>
+                        <div id="furnitureOptions" class="options-group">
+                            <div class="furniture-grid">
+                                <button class="furniture-item" data-type="bed">🛏️ Bed</button>
+                                <button class="furniture-item" data-type="sofa">🛋️ Sofa</button>
+                                <button class="furniture-item" data-type="table">🪑 Table</button>
+                                <button class="furniture-item" data-type="desk">🗃️ Desk</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h3>Properties</h3>
+                    <div id="propertiesPanel">
+                        <p>Select an item to view properties</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <div class="grid-info">
+                    <span>Grid: 1ft per square</span>
+                    <span id="mouseCoords">X: 0, Y: 0</span>
+                </div>
+                <canvas id="floorPlanCanvas" width="800" height="600"></canvas>
+                <div class="canvas-controls">
+                    <button id="zoomIn">🔍+</button>
+                    <button id="zoomOut">🔍-</button>
+                    <button id="resetView">🎯 Reset</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
