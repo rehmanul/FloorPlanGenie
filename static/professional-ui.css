@@ -1,4 +1,4 @@
-/* Professional Architectural UI Styles */
+/* Professional Architectural UI Styles - 59% Scale */
 :root {
     --primary-blue: #007acc;
     --secondary-blue: #0099ff;
@@ -12,8 +12,9 @@
     --border-gray: #ddd;
     --text-dark: #333;
     --text-light: #666;
-    --shadow: 0 2px 8px rgba(0,0,0,0.15);
-    --shadow-light: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow: 0 1.18px 4.72px rgba(0,0,0,0.15);
+    --shadow-light: 0 0.59px 1.77px rgba(0,0,0,0.1);
+    --scale: 0.59;
 }
 
 * {
@@ -37,7 +38,7 @@ body {
 .professional-header {
     background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
     color: white;
-    padding: 0.41rem 0.82rem;
+    padding: calc(0.7rem * var(--scale)) calc(1.4rem * var(--scale));
     box-shadow: var(--shadow);
     position: relative;
     z-index: 100;
@@ -100,12 +101,12 @@ body {
 /* Main Layout */
 .professional-layout {
     display: grid;
-    grid-template-columns: 123px 1fr;
-    min-height: calc(100vh - 33px);
-    max-width: 574px;
+    grid-template-columns: calc(300px * var(--scale)) 1fr;
+    min-height: calc(100vh - calc(56px * var(--scale)));
+    max-width: calc(1400px * var(--scale));
     margin: 0 auto;
-    gap: 0.41rem;
-    padding: 0.41rem;
+    gap: calc(0.7rem * var(--scale));
+    padding: calc(0.7rem * var(--scale));
 }
 
 @media (max-width: 1200px) {
@@ -120,14 +121,14 @@ body {
 /* Sidebar */
 .sidebar {
     background: white;
-    border-radius: 3px;
+    border-radius: calc(6px * var(--scale));
     box-shadow: var(--shadow-light);
-    height: calc(100vh - 49px);
-    max-height: calc(100vh - 49px);
+    height: calc(100vh - calc(80px * var(--scale)));
+    max-height: calc(100vh - calc(80px * var(--scale)));
     overflow-y: scroll !important;
     overflow-x: hidden !important;
     position: sticky;
-    top: 0.41rem;
+    top: calc(0.7rem * var(--scale));
     display: flex;
     flex-direction: column;
     scrollbar-width: thin;
@@ -162,13 +163,13 @@ body {
 }
 
 .sidebar-title {
-    font-size: 0.45rem;
+    font-size: calc(0.875rem * var(--scale));
     font-weight: 600;
-    margin-bottom: 0.41rem;
+    margin-bottom: calc(0.7rem * var(--scale));
     color: var(--text-dark);
     display: flex;
     align-items: center;
-    gap: 0.21rem;
+    gap: calc(0.35rem * var(--scale));
 }
 
 /* File Upload Area */
@@ -216,17 +217,17 @@ body {
 .control-label {
     display: block;
     font-weight: 500;
-    margin-bottom: 0.21rem;
+    margin-bottom: calc(0.35rem * var(--scale));
     color: var(--text-dark);
-    font-size: 0.37rem;
+    font-size: calc(0.8rem * var(--scale));
 }
 
 .control-input {
     width: 100%;
-    padding: 0.31rem;
+    padding: calc(0.5rem * var(--scale));
     border: 1px solid var(--border-gray);
-    border-radius: 2px;
-    font-size: 0.37rem;
+    border-radius: calc(4px * var(--scale));
+    font-size: calc(0.8rem * var(--scale));
     transition: border-color 0.2s ease;
 }
 
@@ -250,10 +251,10 @@ body {
 
 /* Buttons */
 .btn {
-    padding: 0.31rem 0.62rem;
+    padding: calc(0.5rem * var(--scale)) calc(1rem * var(--scale));
     border: none;
-    border-radius: 2px;
-    font-size: 0.37rem;
+    border-radius: calc(4px * var(--scale));
+    font-size: calc(0.875rem * var(--scale));
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -261,8 +262,8 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.21rem;
-    min-height: 18px;
+    gap: calc(0.35rem * var(--scale));
+    min-height: calc(36px * var(--scale));
 }
 
 .btn-primary {
@@ -356,14 +357,14 @@ body {
 .canvas-container {
     flex: 1;
     position: relative;
-    min-height: 246px;
+    min-height: calc(400px * var(--scale));
     overflow: hidden;
     background: linear-gradient(45deg, #f9f9f9 25%, transparent 25%), 
                 linear-gradient(-45deg, #f9f9f9 25%, transparent 25%), 
                 linear-gradient(45deg, transparent 75%, #f9f9f9 75%), 
                 linear-gradient(-45deg, transparent 75%, #f9f9f9 75%);
-    background-size: 8px 8px;
-    background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+    background-size: calc(12px * var(--scale)) calc(12px * var(--scale));
+    background-position: 0 0, 0 calc(6px * var(--scale)), calc(6px * var(--scale)) calc(-6px * var(--scale)), calc(-6px * var(--scale)) 0px;
 }
 
 .canvas-container svg {
