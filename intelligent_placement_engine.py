@@ -498,3 +498,75 @@ class IntelligentPlacementEngine:
             'category_breakdown': category_stats,
             'average_corridor_length': sum(c['length'] for c in corridors) / len(corridors) if corridors else 0
         }
+    
+    def _validate_constraints(self, position: Dict[str, float], dimensions: Dict[str, float], plan_data: Dict[str, Any]) -> bool:
+        """Validate position and dimensions against constraints"""
+        try:
+            # Check if position is within building bounds
+            building_dims = plan_data.get('dimensions', {})
+            if position['x'] < 0 or position['y'] < 0:
+                return False
+            if position['x'] + dimensions['width'] > building_dims.get('width', 100):
+                return False
+            if position['y'] + dimensions['height'] > building_dims.get('height', 100):
+                return False
+            
+            # Check wall proximity (simplified)
+            for wall in plan_data.get('walls', []):
+                if wall.get('type') == 'line':
+                    # Simple proximity check - would be more sophisticated in production
+                    start = wall['start']
+                    end = wall['end']
+                    # Check if too close to walls (within 0.5m)
+                    min_distance = 0.5
+                    # This is a simplified check
+                    if (abs(position['x'] - start['x']) < min_distance or 
+                        abs(position['y'] - start['y']) < min_distance):
+                        return False
+            
+            return True
+        except Exception as e:
+            logging.error(f"Error validating constraints: {e}")
+            return False
+    
+    def _boxes_overlap(self, box1: Dict[str, Any], box2: Dict[str, Any]) -> bool:
+        """Check if two boxes overlap"""
+        try:
+            # Get box coordinates
+            b1_x1, b1_y1 = box1.get('x', 0), box1.get('y', 0)
+            b1_x2 = b1_x1 + box1.get('width', 0)
+            b1_y2 = b1_y1 + box1.get('height', 0)
+            
+            b2_x1, b2_y1 = box2.get('x', 0), box2.get('y', 0)
+            b2_x2 = b2_x1 + box2.get('width', 0)
+            b2_y2 = b2_y1 + box2.get('height', 0)
+            
+            # Check for overlap
+            return not (b1_x2 <= b2_x1 or b2_x2 <= b1_x1 or b1_y2 <= b2_y1 or b2_y2 <= b1_y1)
+        except Exception as e:
+            logging.error(f"Error checking box overlap: {e}")
+            return False
+    
+    def _generate_constraint_suggestions(self, violations: List[str]) -> List[str]:
+        """Generate suggestions to fix constraint violations"""
+        suggestions = []
+        
+        for violation in violations:
+            if 'overlap' in violation.lower():
+                suggestions.append("Try reducing box size or adjusting positions")
+                suggestions.append("Consider using the 'spacious' layout profile")
+            elif 'wall' in violation.lower():
+                suggestions.append("Move boxes further from walls (minimum 0.5m clearance)")
+                suggestions.append("Increase corridor width to improve accessibility")
+            elif 'zone' in violation.lower():
+                suggestions.append("Avoid placing boxes in restricted zones")
+                suggestions.append("Use the zone indicators to identify valid placement areas")
+        
+        if not suggestions:
+            suggestions = [
+                "Try using a different layout profile",
+                "Adjust box dimensions to better fit the space",
+                "Check that your floor plan has valid dimensions"
+            ]
+        
+        return suggestions

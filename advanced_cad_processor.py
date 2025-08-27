@@ -530,10 +530,15 @@ class AdvancedCADProcessor:
             raise
 
 
+    def process_cad_file(self, filepath: str, plan_id: str) -> Dict[str, Any]:
+        """Alias for process_plan to match production_app.py expectations"""
+        result = self.process_plan(filepath)
+        result['id'] = plan_id  # Ensure the ID is set correctly
+        self.plans[plan_id] = result  # Store for later retrieval
+        return result
+    
     def get_plan_data(self, plan_id: str) -> Optional[Dict[str, Any]]:
         """Retrieve processed plan data by ID"""
-        # This would typically query a database or cache
-        # Returning from self.plans for direct access if it was populated
         return self.plans.get(plan_id)
 
     # Original methods from the initial code that might still be relevant or need integration:

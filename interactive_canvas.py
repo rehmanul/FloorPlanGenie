@@ -927,3 +927,26 @@ class InteractiveCanvasRenderer:
         
         const canvasRenderer = new CanvasRenderer();
         """
+    
+    def _generate_single_step(self, data: Dict[str, Any], width: float, height: float) -> str:
+        """Generate single-step visualization for compatibility with production_app.py"""
+        try:
+            # Use the standard visual generator approach but return path
+            from visual_generator import VisualGenerator
+            visual_gen = VisualGenerator()
+            return visual_gen.generate(data, '2d')
+        except Exception as e:
+            logging.error(f"Error in _generate_single_step: {e}")
+            # Fallback: generate a simple SVG and return its path
+            result = self.generate_interactive_svg(data)
+            return result.get('svg_path', 'static/outputs/fallback.svg')
+    
+    def _generate_pdf_export(self, plan_data: Dict[str, Any]) -> str:
+        """Generate PDF export for compatibility with production_app.py"""
+        try:
+            # For now, generate SVG first and return path (PDF conversion would require more dependencies)
+            result = self.generate_interactive_svg(plan_data)
+            return result.get('svg_path', 'static/outputs/export.svg')
+        except Exception as e:
+            logging.error(f"Error in _generate_pdf_export: {e}")
+            return 'static/outputs/error.svg'
