@@ -122,15 +122,39 @@ body {
     background: white;
     border-radius: 8px;
     box-shadow: var(--shadow-light);
+    height: calc(100vh - 120px);
     max-height: calc(100vh - 120px);
-    overflow-y: auto;
+    overflow-y: scroll !important;
+    overflow-x: hidden !important;
     position: sticky;
     top: 1rem;
+    display: flex;
+    flex-direction: column;
+    scrollbar-width: thin;
+    scrollbar-color: #ccc transparent;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 4px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #999;
 }
 
 .sidebar-section {
     border-bottom: 1px solid var(--border-gray);
     padding: 1.5rem;
+    flex-shrink: 0;
 }
 
 .sidebar-section:last-child {
