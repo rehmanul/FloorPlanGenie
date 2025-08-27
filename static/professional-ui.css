@@ -74,6 +74,15 @@ body {
     padding: 1rem;
 }
 
+@media (max-width: 1200px) {
+    .professional-layout {
+        max-width: 100%;
+        grid-template-columns: 280px 1fr;
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+}
+
 /* Sidebar */
 .sidebar {
     background: white;
@@ -107,7 +116,7 @@ body {
 .upload-area {
     border: 2px dashed var(--border-gray);
     border-radius: 8px;
-    padding: 2rem;
+    padding: 1.5rem;
     text-align: center;
     background: var(--light-gray);
     transition: all 0.3s ease;
@@ -288,12 +297,19 @@ body {
     flex: 1;
     position: relative;
     min-height: 600px;
+    overflow: hidden;
     background: linear-gradient(45deg, #f9f9f9 25%, transparent 25%), 
                 linear-gradient(-45deg, #f9f9f9 25%, transparent 25%), 
                 linear-gradient(45deg, transparent 75%, #f9f9f9 75%), 
                 linear-gradient(-45deg, transparent 75%, #f9f9f9 75%);
     background-size: 20px 20px;
     background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+.canvas-container svg {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none;
 }
 
 /* Progress Indicator */
@@ -394,22 +410,45 @@ body {
 @media (max-width: 1024px) {
     .professional-layout {
         grid-template-columns: 1fr;
-        gap: 0;
+        gap: 0.5rem;
     }
     
     .sidebar {
         position: static;
         margin-bottom: 1rem;
+        order: 2;
+    }
+    
+    .main-content {
+        order: 1;
+        min-height: 400px;
     }
     
     .header-content {
         padding: 0 1rem;
     }
+    
+    .canvas-container {
+        min-height: 400px;
+    }
 }
 
 @media (max-width: 768px) {
+    .professional-header {
+        padding: 0.5rem 1rem;
+    }
+    
+    .logo {
+        font-size: 1.2rem;
+    }
+    
+    .version-badge {
+        display: none;
+    }
+    
     .professional-layout {
         padding: 0.5rem;
+        gap: 0.5rem;
     }
     
     .sidebar-section {
@@ -425,6 +464,34 @@ body {
     
     .toolbar {
         justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .toolbar-btn {
+        min-width: 44px;
+    }
+    
+    .canvas-container {
+        min-height: 300px;
+    }
+    
+    .parameter-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar-section {
+        padding: 0.75rem;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+    
+    .control-input {
+        padding: 0.5rem;
     }
 }
 

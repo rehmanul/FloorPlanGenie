@@ -27,10 +27,12 @@ class InteractiveFloorPlanCanvas {
     initializeCanvas() {
         // Create main SVG container
         this.svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        this.svg.setAttribute("width", this.options.width);
-        this.svg.setAttribute("height", this.options.height);
+        this.svg.setAttribute("viewBox", `0 0 ${this.options.width} ${this.options.height}`);
+        this.svg.style.width = "100%";
+        this.svg.style.height = "100%";
         this.svg.style.border = "1px solid #ddd";
         this.svg.style.cursor = "move";
+        this.svg.style.display = "block";
         
         // Create viewport group for zooming and panning
         this.viewport = document.createElementNS("http://www.w3.org/2000/svg", "g");

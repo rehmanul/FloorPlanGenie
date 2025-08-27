@@ -42,6 +42,12 @@
                            accept=".dxf,.dwg,.pdf,.jpg,.jpeg,.png" />
                 </div>
                 
+                <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()" 
+                        style="width: 100%; margin-top: 0.5rem;">
+                    <span>📁</span>
+                    Choose File
+                </button>
+                
                 <div class="progress-container" id="progress-container" style="display: none;">
                     <div class="progress-bar">
                         <div class="progress-fill" id="progress-fill"></div>
@@ -222,10 +228,13 @@
             }
             
             initializeUI() {
-                // Initialize canvas
+                // Initialize canvas with responsive sizing
+                const container = document.getElementById('canvas-container');
+                const rect = container.getBoundingClientRect();
+                
                 this.canvas = new InteractiveFloorPlanCanvas('canvas-container', {
-                    width: 1200,
-                    height: 700
+                    width: Math.max(rect.width || 1200, 800),
+                    height: Math.max(rect.height || 600, 500)
                 });
                 
                 // Update corridor width display
@@ -250,7 +259,11 @@
                 const uploadArea = document.getElementById('upload-area');
                 const fileInput = document.getElementById('file-input');
                 
-                uploadArea.addEventListener('click', () => fileInput.click());
+                uploadArea.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('Upload area clicked');
+                    fileInput.click();
+                });
                 uploadArea.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     uploadArea.classList.add('dragging');
@@ -268,6 +281,7 @@
                 });
                 
                 fileInput.addEventListener('change', (e) => {
+                    console.log('File input changed:', e.target.files);
                     if (e.target.files.length > 0) {
                         this.uploadFile(e.target.files[0]);
                     }
