@@ -42,18 +42,18 @@
                     Project Files
                 </h3>
 
-                <div class="upload-area" id="upload-area" style="display: block !important; visibility: visible !important; position: relative; z-index: 100; background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(16, 185, 129, 0.15)) !important; border: 3px dashed #3b82f6 !important; min-height: 180px !important; padding: 2rem !important;">
-                    <div class="upload-icon" style="font-size: 4rem; color: #3b82f6; display: block; text-align: center;">📐</div>
-                    <div class="upload-text" style="color: #1f2937; font-weight: 600; text-align: center; font-size: 1.1rem;">
-                        <strong style="color: #3b82f6; font-size: 1.3rem;">🏗️ UPLOAD YOUR FLOOR PLAN</strong><br><br>
-                        <div style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0; border: 1px solid #e5e7eb;">
+                <div class="upload-area" id="upload-area">
+                    <div class="upload-icon">📐</div>
+                    <div class="upload-text">
+                        <strong>🏗️ UPLOAD YOUR FLOOR PLAN</strong><br><br>
+                        <div class="upload-info">
                             📁 <strong>Supports:</strong> DXF, DWG, PDF, JPG, PNG<br>
                             📤 <strong>Click here or drag & drop files</strong><br>
-                            <span style="color: #059669; font-weight: bold;">✅ Professional CAD files supported</span>
+                            <span class="supported-text">✅ Professional CAD files supported</span>
                         </div>
                     </div>
                     <input type="file" class="file-input" id="file-input" 
-                           accept=".dxf,.dwg,.pdf,.jpg,.jpeg,.png" style="display: none;" />
+                           accept=".dxf,.dwg,.pdf,.jpg,.jpeg,.png" />
                 </div>
 
                 <button class="btn btn-primary" onclick="document.getElementById('file-input').click()" 
@@ -188,7 +188,7 @@
                         <span>📥</span>
                         Export Results
                     </button>
-                    <button class="btn btn-primary" id="advance-pro-btn" style="display: none; width: 100%; margin-top: 0.5rem;">
+                    <button class="btn btn-primary" id="advance-pro-btn" style="display: none; width: 100%; margin-top: 0.5rem; background: linear-gradient(135deg, #059669, #10b981); font-size: 1rem; font-weight: 700;">
                         <span>🚀</span>
                         Advanced Professional Processing
                     </button>
@@ -455,6 +455,7 @@
                         // Show auto-advance button for professional processing
                         const advanceBtn = document.getElementById('advance-pro-btn');
                         advanceBtn.style.display = 'block';
+                        advanceBtn.style.animation = 'pulse 2s infinite';
                         advanceBtn.onclick = () => this.advancedProfessionalProcessing();
 
                         this.showNotification('success', `Optimization complete! Placed ${result.statistics.total_boxes} boxes with ${result.statistics.utilization_rate}% space utilization`);
