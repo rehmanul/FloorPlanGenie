@@ -222,7 +222,7 @@
 
             <div class="canvas-container" id="canvas-container">
                 <!-- Welcome message -->
-                <div class="welcome-message" id="welcome-message" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: #6b7280; background: #f9f9f9; border: 2px dashed #ddd; border-radius: 8px; margin: 20px;">
+                <div class="welcome-message" id="welcome-message">
                     <div style="font-size: 4rem; margin-bottom: 1rem;">🏗️</div>
                     <h2 style="color: #1f2937; margin-bottom: 0.5rem;">Professional Floor Plan Editor Ready</h2>
                     <p style="margin-bottom: 1.5rem; font-size: 1.1rem; color: #059669; font-weight: bold;">✅ System Active - Upload a floor plan to begin</p>
@@ -277,6 +277,12 @@
                 // Initialize canvas with responsive sizing
                 const container = document.getElementById('canvas-container');
                 const rect = container.getBoundingClientRect();
+
+                // Ensure welcome message is visible initially
+                const welcomeMsg = document.getElementById('welcome-message');
+                if (welcomeMsg) {
+                    welcomeMsg.style.display = 'flex';
+                }
 
                 // Check if InteractiveFloorPlanCanvas is available
                 if (typeof InteractiveFloorPlanCanvas !== 'undefined') {
