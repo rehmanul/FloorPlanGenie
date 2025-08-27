@@ -38,7 +38,7 @@
                     <span>📁</span>
                     Project Files
                 </h3>
-                
+
                 <div class="upload-area" id="upload-area">
                     <div class="upload-icon">📄</div>
                     <div class="upload-text">
@@ -49,13 +49,13 @@
                     <input type="file" class="file-input" id="file-input" 
                            accept=".dxf,.dwg,.pdf,.jpg,.jpeg,.png" />
                 </div>
-                
+
                 <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()" 
                         style="width: 100%; margin-top: 0.5rem;">
                     <span>📁</span>
                     Choose File
                 </button>
-                
+
                 <div class="progress-container" id="progress-container" style="display: none;">
                     <div class="progress-bar">
                         <div class="progress-fill" id="progress-fill"></div>
@@ -70,7 +70,7 @@
                     <span>⚙️</span>
                     Optimization Settings
                 </h3>
-                
+
                 <div class="control-group">
                     <label class="control-label">Box Dimensions</label>
                     <div class="parameter-grid">
@@ -86,7 +86,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="control-group">
                     <label class="control-label">Corridor Width</label>
                     <input type="range" class="control-range" 
@@ -97,7 +97,7 @@
                         <span>3.0m</span>
                     </div>
                 </div>
-                
+
                 <div class="control-group">
                     <label class="control-label">Layout Profile</label>
                     <select class="control-input" id="layout-profile">
@@ -107,7 +107,7 @@
                         <option value="minimal">Minimal (25-35%)</option>
                     </select>
                 </div>
-                
+
                 <button class="btn btn-primary" id="optimize-btn" disabled>
                     <span>🎯</span>
                     Optimize Layout
@@ -129,7 +129,7 @@
                             <input type="number" class="control-input" 
                                    id="iterations" value="100" min="50" max="500">
                         </div>
-                        
+
                         <div class="control-group">
                             <label class="control-label">Algorithm Type</label>
                             <select class="control-input" id="algorithm-type">
@@ -138,7 +138,7 @@
                                 <option value="hybrid">Hybrid Approach</option>
                             </select>
                         </div>
-                        
+
                         <div class="control-group">
                             <label class="control-label">Constraint Priority</label>
                             <select class="control-input" id="constraint-priority">
@@ -157,7 +157,7 @@
                     <span>📊</span>
                     Optimization Results
                 </h3>
-                
+
                 <div class="stats-grid">
                     <div class="stat-card">
                         <span class="stat-value" id="total-boxes">0</span>
@@ -176,7 +176,7 @@
                         <div class="stat-label">Corridors</div>
                     </div>
                 </div>
-                
+
                 <div class="control-group" style="margin-top: 1rem;">
                     <button class="btn btn-success" id="export-btn">
                         <span>📥</span>
@@ -190,7 +190,7 @@
         <main class="main-content">
             <header class="content-header">
                 <h1 class="content-title" id="canvas-title">Interactive Floor Plan Editor</h1>
-                
+
                 <div class="toolbar">
                     <button class="toolbar-btn active" id="view-btn" title="Pan & Zoom">
                         <span>👁️</span>
@@ -209,7 +209,7 @@
                     </button>
                 </div>
             </header>
-            
+
             <div class="canvas-container" id="canvas-container">
                 <!-- Interactive canvas will be inserted here -->
                 <div class="loading-overlay" id="canvas-loading" style="display: none;">
@@ -218,7 +218,7 @@
                         <p style="margin-top: 1rem;">Processing floor plan...</p>
                     </div>
                 </div>
-                
+
                 <!-- Status Bar -->
                 <div class="status-bar" id="status-bar" style="display: none;">
                     <div class="status-left">
@@ -242,28 +242,28 @@
                 this.canvas = null;
                 this.currentPlanId = null;
                 this.optimizationData = null;
-                
+
                 this.initializeUI();
                 this.bindEvents();
             }
-            
+
             initializeUI() {
                 // Initialize canvas with responsive sizing
                 const container = document.getElementById('canvas-container');
                 const rect = container.getBoundingClientRect();
-                
+
                 this.canvas = new InteractiveFloorPlanCanvas('canvas-container', {
                     width: Math.max(rect.width || 1200, 800),
                     height: Math.max(rect.height || 600, 500)
                 });
-                
+
                 // Update corridor width display
                 const corridorSlider = document.getElementById('corridor-width');
                 const corridorValue = document.getElementById('corridor-value');
                 corridorSlider.addEventListener('input', (e) => {
                     corridorValue.textContent = `${e.target.value}m`;
                 });
-                
+
                 // Advanced toggle
                 const advancedToggle = document.getElementById('advanced-toggle');
                 const advancedContent = document.getElementById('advanced-content');
@@ -273,12 +273,12 @@
                     arrow.textContent = advancedContent.classList.contains('open') ? '▼' : '▶️';
                 });
             }
-            
+
             bindEvents() {
                 // File upload
                 const uploadArea = document.getElementById('upload-area');
                 const fileInput = document.getElementById('file-input');
-                
+
                 uploadArea.addEventListener('click', (e) => {
                     e.preventDefault();
                     console.log('Upload area clicked');
@@ -299,24 +299,24 @@
                         this.uploadFile(files[0]);
                     }
                 });
-                
+
                 fileInput.addEventListener('change', (e) => {
                     console.log('File input changed:', e.target.files);
                     if (e.target.files.length > 0) {
                         this.uploadFile(e.target.files[0]);
                     }
                 });
-                
+
                 // Optimization
                 document.getElementById('optimize-btn').addEventListener('click', () => {
                     this.optimizeLayout();
                 });
-                
+
                 // Export
                 document.getElementById('export-btn').addEventListener('click', () => {
                     this.exportResults();
                 });
-                
+
                 // Toolbar
                 document.querySelectorAll('.toolbar-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
@@ -324,43 +324,43 @@
                         e.target.classList.add('active');
                     });
                 });
-                
+
                 // Canvas events
                 document.getElementById('canvas-container').addEventListener('boxSelected', (e) => {
                     this.showNotification('info', `Selected: ${e.detail.box.id}`);
                 });
             }
-            
+
             async uploadFile(file) {
                 this.showProgress('Uploading file...', 10);
-                
+
                 const formData = new FormData();
                 formData.append('file', file);
-                
+
                 try {
                     const response = await fetch('/upload', {
                         method: 'POST',
                         body: formData
                     });
-                    
+
                     this.showProgress('Processing plan data...', 50);
-                    
+
                     if (response.ok) {
                         const result = await response.json();
                         this.showProgress('Rendering visualization...', 80);
-                        
+
                         this.currentPlanId = result.plan_id;
                         this.canvas.loadPlanData(result);
-                        
+
                         // Update status bar
                         this.updateStatusBar(result.dimensions);
-                        
+
                         document.getElementById('optimize-btn').disabled = false;
                         document.getElementById('canvas-title').textContent = `Floor Plan: ${file.name}`;
-                        
+
                         this.showProgress('Complete!', 100);
                         setTimeout(() => this.hideProgress(), 1000);
-                        
+
                         this.showNotification('success', `Floor plan loaded: ${result.dimensions.width.toFixed(1)}m × ${result.dimensions.height.toFixed(1)}m`);
                     } else {
                         throw new Error('Upload failed');
@@ -370,22 +370,22 @@
                     this.hideProgress();
                 }
             }
-            
+
             async optimizeLayout() {
                 if (!this.currentPlanId) {
                     this.showNotification('error', 'Please upload a floor plan first');
                     return;
                 }
-                
+
                 const boxWidth = parseFloat(document.getElementById('box-width').value);
                 const boxHeight = parseFloat(document.getElementById('box-height').value);
                 const corridorWidth = parseFloat(document.getElementById('corridor-width').value);
                 const layoutProfile = document.getElementById('layout-profile').value;
-                
+
                 const optimizeBtn = document.getElementById('optimize-btn');
                 optimizeBtn.disabled = true;
                 optimizeBtn.innerHTML = '<span class="spinner" style="width:16px;height:16px;margin-right:8px;"></span>Optimizing...';
-                
+
                 try {
                     const response = await fetch('/advanced_optimize', {
                         method: 'POST',
@@ -398,20 +398,20 @@
                             layout_profile: layoutProfile
                         })
                     });
-                    
+
                     if (response.ok) {
                         const result = await response.json();
                         this.optimizationData = result;
-                        
+
                         // Update canvas
                         this.canvas.updateVisualization(result);
-                        
+
                         // Update statistics
                         this.updateStatistics(result.statistics);
-                        
+
                         // Show results panel
                         document.getElementById('stats-section').style.display = 'block';
-                        
+
                         this.showNotification('success', `Optimization complete! Placed ${result.statistics.total_boxes} boxes with ${result.statistics.utilization_rate}% space utilization`);
                     } else {
                         const error = await response.json();
@@ -424,39 +424,39 @@
                     optimizeBtn.innerHTML = '<span>🎯</span> Optimize Layout';
                 }
             }
-            
+
             updateStatistics(stats) {
                 document.getElementById('total-boxes').textContent = stats.total_boxes || 0;
                 document.getElementById('utilization-rate').textContent = `${Math.round(stats.utilization_rate || 0)}%`;
                 document.getElementById('efficiency-score').textContent = Math.round(stats.efficiency_score || 0);
                 document.getElementById('corridor-length').textContent = `${Math.round(stats.total_corridor_length || 0)}m`;
             }
-            
+
             updateStatusBar(dimensions) {
                 const statusBar = document.getElementById('status-bar');
                 const buildingInfo = document.getElementById('building-info');
                 const areaInfo = document.getElementById('area-info');
-                
+
                 if (dimensions) {
                     buildingInfo.textContent = `Building: ${dimensions.width.toFixed(1)}m × ${dimensions.height.toFixed(1)}m`;
                     areaInfo.textContent = `Total Area: ${(dimensions.width * dimensions.height).toFixed(0)}m²`;
                     statusBar.style.display = 'flex';
                 }
             }
-            
+
             async exportResults() {
                 if (!this.optimizationData) {
                     this.showNotification('error', 'No optimization results to export');
                     return;
                 }
-                
+
                 try {
                     const response = await fetch('/interactive_visual', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(this.optimizationData)
                     });
-                    
+
                     if (response.ok) {
                         const result = await response.json();
                         // Create download link
@@ -464,7 +464,7 @@
                         link.href = result.svg_path || '/generate_visual';
                         link.download = 'floor_plan_optimization.svg';
                         link.click();
-                        
+
                         this.showNotification('success', 'Results exported successfully');
                     } else {
                         throw new Error('Export failed');
@@ -473,30 +473,30 @@
                     this.showNotification('error', `Export failed: ${error.message}`);
                 }
             }
-            
+
             showProgress(text, percent) {
                 document.getElementById('progress-container').style.display = 'block';
                 document.getElementById('progress-text').textContent = text;
                 document.getElementById('progress-fill').style.width = `${percent}%`;
             }
-            
+
             hideProgress() {
                 document.getElementById('progress-container').style.display = 'none';
             }
-            
+
             showNotification(type, message) {
                 const notification = document.createElement('div');
                 notification.className = `notification ${type}`;
                 notification.textContent = message;
-                
+
                 document.body.appendChild(notification);
-                
+
                 setTimeout(() => {
                     notification.remove();
                 }, 5000);
             }
         }
-        
+
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
             window.app = new ProfessionalFloorPlanApp();

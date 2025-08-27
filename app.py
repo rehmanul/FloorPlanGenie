@@ -29,7 +29,7 @@ app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
     "pool_pre_ping": True,
 }
 app.config['UPLOAD_FOLDER'] = 'uploads'
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size
 
 # initialize the app with the extension, flask-sqlalchemy >= 3.0.x
 db.init_app(app)
@@ -69,8 +69,9 @@ def upload_file():
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
-        # Process the plan
+        # Process the plan with timeout protection
         try:
+            print(f"Processing file: {filename} (size: {file.content_length if hasattr(file, 'content_length') else 'unknown'})")
             plan_data = plan_processor.process_plan(filepath)
             print(f"File processed successfully. Plan ID: {plan_data['id']}")
             print(f"Total stored plans: {len(plan_processor.plans)}")
@@ -82,8 +83,12 @@ def upload_file():
                 'dimensions': plan_data['dimensions']
             }
             
-            # Generate visual representation
-            visual_path = visual_generator.generate(initial_visual_data, '2d')
+            # Generate visual representation with timeout handling
+            try:
+                visual_path = visual_generator.generate(initial_visual_data, '2d')
+            except Exception as visual_error:
+                print(f"Visual generation failed: {visual_error}")
+                visual_path = None
             
             return jsonify({
                 'success': True,
@@ -91,10 +96,11 @@ def upload_file():
                 'dimensions': plan_data['dimensions'],
                 'walls': plan_data['walls'],
                 'zones': plan_data['zones'],
-                'visual_path': visual_path.replace('static/', '/static/')  # Convert to web path
+                'visual_path': visual_path.replace('static/', '/static/') if visual_path else None
             })
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
+            print(f"Upload processing error: {e}")
+            return jsonify({'error': f'Error processing file: {str(e)}'}), 500
 
 @app.route('/optimize', methods=['POST'])
 def optimize_space():

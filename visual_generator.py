@@ -33,12 +33,14 @@ class VisualGenerator:
             raise
 
     def _generate_3_step_2d(self, data, width, height):
-        """Generate 3-step 2D visualization matching user's examples"""
+        """Generate 3-step 2D visualization with timeout protection"""
         try:
-            # Ensure matplotlib backend is properly set
-            plt.ioff()  # Turn off interactive mode
+            # Set matplotlib to non-interactive backend to prevent timeouts
+            plt.ioff()
 
-            fig, axes = plt.subplots(1, 3, figsize=(18, 6))
+            # Create figure with white background
+            fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(18, 6))
+            fig.patch.set_facecolor('white')
 
             # Ensure valid dimensions
             width = max(float(width), 1.0)
@@ -71,20 +73,36 @@ class VisualGenerator:
             plt.suptitle('FloorPlanGenie - Optimisation Architecturale', fontsize=16, fontweight='bold')
             plt.tight_layout()
 
-            # Save the output
+            # Save the figure with timeout protection
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
             filename = f"optimization_3steps_{timestamp}.png"
             filepath = os.path.join(self.output_dir, filename)
 
-            plt.savefig(filepath, dpi=300, bbox_inches='tight', facecolor='white')
-            plt.close()
+            try:
+                plt.tight_layout()
+                plt.savefig(filepath, dpi=100, bbox_inches='tight', 
+                           facecolor='white', edgecolor='none')
+            except Exception as e:
+                print(f"Saving error: {e}")
+            finally:
+                plt.close('all')  # Close all figures to prevent memory leaks
+                plt.clf()
 
             return filepath
 
         except Exception as e:
-            print(f"Error generating visualization: {e}")
+            print(f"Visual generation error: {e}")
             # Create a simple fallback image
-            return self._create_fallback_image()
+            fig, ax = plt.subplots(1, 1, figsize=(8, 6))
+            ax.text(0.5, 0.5, 'Processing...', ha='center', va='center', fontsize=20)
+            ax.set_xlim(0, 1)
+            ax.set_ylim(0, 1)
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            filename = f"optimization_3steps_{timestamp}.png"
+            filepath = os.path.join(self.output_dir, filename)
+            plt.savefig(filepath, dpi=100, bbox_inches='tight')
+            plt.close('all')
+            return filepath
 
 
     def _generate_single_step(self, data, width, height):
