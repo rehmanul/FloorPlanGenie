@@ -210,6 +210,18 @@
                         <p style="margin-top: 1rem;">Processing floor plan...</p>
                     </div>
                 </div>
+                
+                <!-- Status Bar -->
+                <div class="status-bar" id="status-bar" style="display: none;">
+                    <div class="status-left">
+                        <span id="building-info">Building: 0m × 0m</span>
+                        <span id="area-info">Total Area: 0m²</span>
+                        <span id="position-info">Position: 0,0</span>
+                    </div>
+                    <div class="status-right">
+                        <span id="selection-info">No selection</span>
+                    </div>
+                </div>
             </div>
         </main>
     </main>
@@ -332,6 +344,9 @@
                         this.currentPlanId = result.plan_id;
                         this.canvas.loadPlanData(result);
                         
+                        // Update status bar
+                        this.updateStatusBar(result.dimensions);
+                        
                         document.getElementById('optimize-btn').disabled = false;
                         document.getElementById('canvas-title').textContent = `Floor Plan: ${file.name}`;
                         
@@ -407,6 +422,18 @@
                 document.getElementById('utilization-rate').textContent = `${Math.round(stats.utilization_rate || 0)}%`;
                 document.getElementById('efficiency-score').textContent = Math.round(stats.efficiency_score || 0);
                 document.getElementById('corridor-length').textContent = `${Math.round(stats.total_corridor_length || 0)}m`;
+            }
+            
+            updateStatusBar(dimensions) {
+                const statusBar = document.getElementById('status-bar');
+                const buildingInfo = document.getElementById('building-info');
+                const areaInfo = document.getElementById('area-info');
+                
+                if (dimensions) {
+                    buildingInfo.textContent = `Building: ${dimensions.width.toFixed(1)}m × ${dimensions.height.toFixed(1)}m`;
+                    areaInfo.textContent = `Total Area: ${(dimensions.width * dimensions.height).toFixed(0)}m²`;
+                    statusBar.style.display = 'flex';
+                }
             }
             
             async exportResults() {

@@ -308,8 +308,86 @@ body {
 
 .canvas-container svg {
     width: 100% !important;
-    height: 100% !important;
+    height: calc(100% - 50px) !important; /* Leave space for status bar */
     max-width: none;
+}
+
+/* Status Bar */
+.status-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.95);
+    border-top: 1px solid var(--border-gray);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    font-size: 0.8rem;
+    color: var(--text-dark);
+    backdrop-filter: blur(5px);
+    z-index: 10;
+}
+
+.status-left {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.status-left span {
+    white-space: nowrap;
+}
+
+/* Layout Profile Buttons - Fix overlapping */
+.layout-profiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.profile-btn {
+    padding: 0.75rem;
+    border: 2px solid var(--border-gray);
+    border-radius: 6px;
+    background: white;
+    font-weight: 600;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-btn.active {
+    border-color: var(--primary-blue);
+    background: var(--light-blue);
+    color: var(--primary-blue);
+}
+
+.profile-btn:hover {
+    border-color: var(--primary-blue);
+    transform: translateY(-1px);
+}
+
+.profile-btn .percentage {
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.profile-btn .label {
+    font-size: 0.7rem;
+    margin-top: 2px;
+    opacity: 0.8;
 }
 
 /* Progress Indicator */
