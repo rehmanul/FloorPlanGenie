@@ -84,27 +84,8 @@ def index():
 @app.route('/professional')
 def professional():
     """Serve the professional interface"""
-    if not PRODUCTION_MODE:
-        return render_template('professional.html')
-    
-    try:
-        # Generate modern interface with default data
-        default_data = {
-            'dimensions': {'width': 50, 'height': 40},
-            'statistics': {
-                'total_boxes': 0,
-                'utilization_rate': 0,
-                'total_corridors': 0,
-                'efficiency_score': 0
-            }
-        }
-        
-        html_content = modern_ui_controller.generate_modern_interface_html(default_data)
-        return render_template_string(html_content)
-        
-    except Exception as e:
-        print(f"Error serving professional interface: {e}")
-        return render_template('professional.html')
+    # Always use the static template which works properly
+    return render_template('professional.html')
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
