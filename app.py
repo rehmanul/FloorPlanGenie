@@ -1,15 +1,43 @@
 
-from flask import Flask, render_template, request, jsonify, send_file
-import json
 import os
+import json
+from flask import Flask, render_template, request, jsonify, send_file
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase
+from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.utils import secure_filename
 from plan_processor import PlanProcessor
 from space_optimizer import SpaceOptimizer
 from visual_generator import VisualGenerator
 
+
+class Base(DeclarativeBase):
+    pass
+
+
+db = SQLAlchemy(model_class=Base)
+
+# create the app
 app = Flask(__name__)
+app.secret_key = os.environ.get("SESSION_SECRET")
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)  # needed for url_for to generate with https
+
+# configure the database, relative to the app instance folder
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_recycle": 300,
+    "pool_pre_ping": True,
+}
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max file size
+
+# initialize the app with the extension, flask-sqlalchemy >= 3.0.x
+db.init_app(app)
+
+with app.app_context():
+    # Make sure to import the models here or their tables won't be created
+    import models  # noqa: F401
+    db.create_all()
 
 @app.errorhandler(413)
 def too_large(e):
@@ -37,7 +65,7 @@ def upload_file():
         return jsonify({'error': 'No file selected'}), 400
     
     if file:
-        filename = secure_filename(file.filename)
+        filename = secure_filename(file.filename or "upload")
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
@@ -70,7 +98,7 @@ def upload_file():
 
 @app.route('/optimize', methods=['POST'])
 def optimize_space():
-    data = request.json
+    data = request.json or {}
     plan_id = data.get('plan_id')
     box_dimensions = data.get('box_dimensions', {'width': 3.0, 'height': 4.0})
     corridor_width = data.get('corridor_width', 1.2)
@@ -137,7 +165,7 @@ def get_plan_visual(plan_id):
 
 @app.route('/generate_visual', methods=['POST'])
 def generate_visual():
-    data = request.json
+    data = request.json or {}
     output_format = data.get('format', '2d')
     
     print(f"Generating visual with format: {output_format}")
@@ -190,7 +218,7 @@ def advanced_optimize():
     try:
         from intelligent_placement_engine import IntelligentPlacementEngine
         
-        data = request.json
+        data = request.json or {}
         plan_id = data.get('plan_id')
         layout_profile = data.get('layout_profile', '25%')
         
@@ -226,7 +254,7 @@ def advanced_optimize():
         
     except ImportError:
         # Fallback to standard optimization
-        return optimize_layout()
+        return optimize_space()
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -236,7 +264,7 @@ def generate_interactive_visual():
     try:
         from interactive_canvas import InteractiveCanvasRenderer
         
-        data = request.json
+        data = request.json or {}
         if not data or 'boxes' not in data:
             return jsonify({'error': 'No optimization data provided'}), 400
         
