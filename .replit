@@ -75,6 +75,15 @@ mode = "sequential"
 task = "shell.exec"
 args = "gunicorn --bind 0.0.0.0:5000 --timeout 120 --workers 1 --reload main:app"
 
+[[workflows.workflow]]
+name = "FloorPlan Production Server"
+author = 46969031
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "gunicorn --bind 0.0.0.0:5000 --timeout 120 --workers 1 --reload main:app"
+
 [[ports]]
 localPort = 5000
 externalPort = 80
