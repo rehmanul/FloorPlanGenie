@@ -403,9 +403,20 @@ class InteractiveFloorPlanCanvas {
     }
 
     renderZones(zones, scale) {
-        if (!zones || zones.length === 0) return;
+        if (!zones) return;
         
-        zones.forEach((zone, index) => {
+        // Handle zones as object with entry_exit and no_entry arrays
+        const allZones = [];
+        if (zones.entry_exit && Array.isArray(zones.entry_exit)) {
+            allZones.push(...zones.entry_exit.map(z => ({...z, type: 'entry_exit'})));
+        }
+        if (zones.no_entry && Array.isArray(zones.no_entry)) {
+            allZones.push(...zones.no_entry.map(z => ({...z, type: 'no_entry'})));
+        }
+        
+        if (allZones.length === 0) return;
+        
+        allZones.forEach((zone, index) => {
             if (zone.points && zone.points.length > 2) {
                 const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
                 
@@ -415,13 +426,27 @@ class InteractiveFloorPlanCanvas {
                 ).join(' ');
                 
                 polygon.setAttribute("points", points);
-                polygon.setAttribute("fill", "rgba(173, 216, 230, 0.3)");
-                polygon.setAttribute("stroke", "rgba(173, 216, 230, 0.8)");
+                polygon.setAttribute("fill", zone.type === 'entry_exit' ? "rgba(46, 125, 50, 0.3)" : "rgba(244, 67, 54, 0.3)");
+                polygon.setAttribute("stroke", zone.type === 'entry_exit' ? "rgba(46, 125, 50, 0.8)" : "rgba(244, 67, 54, 0.8)");
                 polygon.setAttribute("stroke-width", "1");
-                polygon.setAttribute("class", "zone");
+                polygon.setAttribute("class", `zone zone-${zone.type}`);
                 polygon.setAttribute("data-zone-id", index);
 
                 this.layers.annotations.appendChild(polygon);
+            } else if (zone.x !== undefined && zone.y !== undefined) {
+                // Render rectangular zones
+                const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                rect.setAttribute("x", zone.x * scale);
+                rect.setAttribute("y", zone.y * scale);
+                rect.setAttribute("width", (zone.width || 1) * scale);
+                rect.setAttribute("height", (zone.height || 1) * scale);
+                rect.setAttribute("fill", zone.type === 'entry_exit' ? "rgba(46, 125, 50, 0.3)" : "rgba(244, 67, 54, 0.3)");
+                rect.setAttribute("stroke", zone.type === 'entry_exit' ? "rgba(46, 125, 50, 0.8)" : "rgba(244, 67, 54, 0.8)");
+                rect.setAttribute("stroke-width", "1");
+                rect.setAttribute("class", `zone zone-${zone.type}`);
+                rect.setAttribute("data-zone-id", index);
+
+                this.layers.annotations.appendChild(rect);
             }
         });
     }

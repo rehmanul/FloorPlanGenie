@@ -343,6 +343,13 @@ class ProfessionalUI {
             placeholder.style.display = 'none';
         }
 
+        // Calculate zone count properly
+        let zoneCount = 0;
+        if (planData.zones) {
+            if (planData.zones.entry_exit) zoneCount += planData.zones.entry_exit.length;
+            if (planData.zones.no_entry) zoneCount += planData.zones.no_entry.length;
+        }
+
         // Add basic plan visualization
         const planInfo = document.createElement('div');
         planInfo.className = 'plan-info';
@@ -351,7 +358,7 @@ class ProfessionalUI {
             <p>Width: ${planData.dimensions?.width?.toFixed(2) || 'Unknown'}m</p>
             <p>Height: ${planData.dimensions?.height?.toFixed(2) || 'Unknown'}m</p>
             <p>Walls: ${planData.walls?.length || 0}</p>
-            <p>Zones: ${planData.zones?.length || 0}</p>
+            <p>Zones: ${zoneCount}</p>
             <p>Doors: ${planData.doors?.length || 0}</p>
         `;
 
