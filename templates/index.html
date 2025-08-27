@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FloorPlanGenie - AI-Powered Space Optimization</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>🏠 FloorPlanGenie</h1>
+        <p>AI-Powered Space Optimization with Island Placement & Corridor Generation</p>
+    </header>
+
+    <main>
+        <div class="container">
+            <!-- File Upload Section -->
+            <div class="upload-section">
+                <h2>📁 Upload Floor Plan</h2>
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="fileInput" accept=".pdf,.dwg,.dxf,.jpg,.jpeg,.png" multiple>
+                    <div class="upload-text">
+                        <p>Drop files here or click to browse</p>
+                        <small>Supports: PDF, DWG, DXF, JPG, PNG</small>
+                    </div>
+                </div>
+                <div id="uploadProgress" class="progress-bar" style="display: none;">
+                    <div class="progress-fill"></div>
+                </div>
+            </div>
+
+            <!-- Configuration Section -->
+            <div class="config-section">
+                <h2>⚙️ Configuration</h2>
+                <div class="config-grid">
+                    <div class="config-group">
+                        <label>Island Box Dimensions</label>
+                        <div class="input-group">
+                            <input type="number" id="boxWidth" value="3.0" step="0.1" min="1" max="10">
+                            <span>m (width)</span>
+                        </div>
+                        <div class="input-group">
+                            <input type="number" id="boxHeight" value="4.0" step="0.1" min="1" max="10">
+                            <span>m (height)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="config-group">
+                        <label>Corridor Width</label>
+                        <div class="input-group">
+                            <input type="number" id="corridorWidth" value="1.2" step="0.1" min="0.8" max="3.0">
+                            <span>m</span>
+                        </div>
+                    </div>
+                    
+                    <div class="config-group">
+                        <label>Output Format</label>
+                        <select id="outputFormat">
+                            <option value="2d">2D Plan</option>
+                            <option value="3d">3D Visualization</option>
+                            <option value="pdf">PDF Report</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button id="optimizeBtn" class="optimize-btn" disabled>
+                    🚀 Optimize Layout
+                </button>
+            </div>
+
+            <!-- Results Section -->
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h2>📊 Optimization Results</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 id="totalBoxes">0</h3>
+                        <p>Island Boxes</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="totalCorridors">0</h3>
+                        <p>Corridors</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="utilizationRate">0%</h3>
+                        <p>Space Utilization</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="totalArea">0 m²</h3>
+                        <p>Total Area</p>
+                    </div>
+                </div>
+
+                <div class="visualization-container">
+                    <img id="resultImage" src="" alt="Generated floor plan" style="display: none;">
+                    <div class="download-buttons">
+                        <button id="downloadBtn" class="download-btn">💾 Download Plan</button>
+                        <button id="regenerateBtn" class="regenerate-btn">🔄 Regenerate</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legend Section -->
+            <div class="legend-section">
+                <h3>🎨 Legend</h3>
+                <div class="legend-grid">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #90EE90;"></div>
+                        <span>Island Boxes</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #FFE4B5;"></div>
+                        <span>Corridors (1.2m width)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #FF6B6B; opacity: 0.3;"></div>
+                        <span>No Entry Zones</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #4ECDC4; opacity: 0.3;"></div>
+                        <span>Entry/Exit Zones</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line"></div>
+                        <span>Walls</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
