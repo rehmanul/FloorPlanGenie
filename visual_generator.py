@@ -46,18 +46,18 @@ class VisualGenerator:
             width = max(float(width), 1.0)
             height = max(float(height), 1.0)
 
+            # Get the axes from the subplots
+            axes = [ax1, ax2, ax3]
+            
             # Step 1: Empty Floor Plan with Color Coding
-            ax1 = axes[0]
             self._draw_step1_empty_plan(ax1, data, width, height)
             ax1.set_title('1. Plan Vide\n(Zones d\'Entrée)', fontsize=12, fontweight='bold')
 
             # Step 2: Place Îlots  
-            ax2 = axes[1]
             self._draw_step2_with_ilots(ax2, data, width, height)
             ax2.set_title('2. Placement des Îlots\n(Zones Optimisées)', fontsize=12, fontweight='bold')
 
             # Step 3: Add Corridors
-            ax3 = axes[2]
             self._draw_step3_with_corridors(ax3, data, width, height)
             ax3.set_title('3. Corridors & Calculs\n(Résultat Final)', fontsize=12, fontweight='bold')
 

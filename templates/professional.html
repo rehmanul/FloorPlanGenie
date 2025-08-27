@@ -7,6 +7,9 @@
     <link rel="stylesheet" href="/static/professional-ui.css">
 </head>
 <body>
+    <!-- Back to Home Button -->
+    <a href="/" class="back-to-home">← Back to Home</a>
+
     <header class="professional-header">
         <div class="header-content">
             <div class="logo">
@@ -40,11 +43,12 @@
                 </h3>
 
                 <div class="upload-area" id="upload-area">
-                    <div class="upload-icon">📄</div>
+                    <div class="upload-icon">📐</div>
                     <div class="upload-text">
-                        <strong>Upload Floor Plan</strong><br>
-                        DXF, DWG, PDF or Image files<br>
-                        <small>Drag & drop or click to browse</small>
+                        <strong>Upload Your Floor Plan</strong><br>
+                        Supports: DXF, DWG, PDF, JPG, PNG<br>
+                        <small>📤 Drag & drop files here or click to browse</small><br>
+                        <small style="color: #059669;">✓ Professional CAD files supported</small>
                     </div>
                     <input type="file" class="file-input" id="file-input" 
                            accept=".dxf,.dwg,.pdf,.jpg,.jpeg,.png" />
@@ -211,6 +215,19 @@
             </header>
 
             <div class="canvas-container" id="canvas-container">
+                <!-- Welcome message -->
+                <div class="welcome-message" id="welcome-message" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: #6b7280;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">🏗️</div>
+                    <h2 style="color: #1f2937; margin-bottom: 0.5rem;">Professional Floor Plan Editor</h2>
+                    <p style="margin-bottom: 1.5rem; font-size: 1.1rem;">Upload a floor plan to get started with optimization</p>
+                    <div style="background: #f3f4f6; padding: 1rem; border-radius: 8px; max-width: 400px;">
+                        <p><strong>📋 Step 1:</strong> Upload your DXF/DWG file in the left sidebar</p>
+                        <p><strong>⚙️ Step 2:</strong> Configure optimization settings</p>
+                        <p><strong>🎯 Step 3:</strong> Click "Optimize Layout"</p>
+                        <p><strong>📥 Step 4:</strong> Export your optimized results</p>
+                    </div>
+                </div>
+
                 <!-- Interactive canvas will be inserted here -->
                 <div class="loading-overlay" id="canvas-loading" style="display: none;">
                     <div>
@@ -351,6 +368,10 @@
 
                         this.currentPlanId = result.plan_id;
                         this.canvas.loadPlanData(result);
+
+                        // Hide welcome message and show canvas
+                        const welcomeMsg = document.getElementById('welcome-message');
+                        if (welcomeMsg) welcomeMsg.style.display = 'none';
 
                         // Update status bar
                         this.updateStatusBar(result.dimensions);
