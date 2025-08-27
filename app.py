@@ -76,6 +76,8 @@ def optimize_space():
     try:
         # Get plan data
         plan_data = plan_processor.get_plan_data(plan_id)
+        if not plan_data:
+            return jsonify({'error': 'Plan data not found. Please upload a file first.'}), 404
         
         # Optimize space placement
         optimization_result = space_optimizer.optimize_placement(

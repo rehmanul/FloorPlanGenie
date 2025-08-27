@@ -14,6 +14,12 @@ class SpaceOptimizer:
     
     def optimize_placement(self, plan_data, box_dimensions, corridor_width):
         """Advanced space optimization with collision detection and efficiency maximization"""
+        if not plan_data:
+            raise ValueError("Plan data is required for optimization")
+        
+        if 'dimensions' not in plan_data:
+            raise ValueError("Plan dimensions not found")
+            
         width = plan_data['dimensions']['width']
         height = plan_data['dimensions']['height']
         walls = plan_data.get('walls', [])

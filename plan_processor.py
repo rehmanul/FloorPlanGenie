@@ -39,7 +39,7 @@ class PlanProcessor:
             return self._create_basic_plan(filepath, plan_id)
 
     def _process_cad_file(self, filepath, plan_id):
-        """Process DWG/DXF files to extract walls, dimensions and zones"""
+        """Process DWG/DXF files to extract walls, dimensions and zones with real architectural data"""
         try:
             # Read DXF file
             doc = ezdxf.readfile(filepath)
@@ -49,42 +49,114 @@ class PlanProcessor:
             zones = {'entry_exit': [], 'no_entry': [], 'walls': []}
             min_x, min_y = float('inf'), float('inf')
             max_x, max_y = float('-inf'), float('-inf')
+            doors = []
             
-            # Extract lines (walls) and other entities
+            # Extract different types of entities
             for entity in modelspace:
                 if entity.dxftype() == 'LINE':
                     start = entity.dxf.start
                     end = entity.dxf.end
                     
-                    wall = {
-                        'start': {'x': start.x, 'y': start.y},
-                        'end': {'x': end.x, 'y': end.y},
-                        'layer': entity.dxf.layer
-                    }
-                    walls.append(wall)
-                    zones['walls'].append(wall)
-                    
-                    # Track boundaries
-                    min_x = min(min_x, start.x, end.x)
-                    max_x = max(max_x, start.x, end.x)
-                    min_y = min(min_y, start.y, end.y)
-                    max_y = max(max_y, start.y, end.y)
+                    # Only consider significant lines (walls)
+                    line_length = ((end.x - start.x)**2 + (end.y - start.y)**2)**0.5
+                    if line_length > 0.1:  # Filter very small lines
+                        wall = {
+                            'start': {'x': float(start.x), 'y': float(start.y)},
+                            'end': {'x': float(end.x), 'y': float(end.y)},
+                            'layer': getattr(entity.dxf, 'layer', 'Default'),
+                            'length': line_length
+                        }
+                        walls.append(wall)
+                        
+                        # Track boundaries
+                        min_x = min(min_x, start.x, end.x)
+                        max_x = max(max_x, start.x, end.x)
+                        min_y = min(min_y, start.y, end.y)
+                        max_y = max(max_y, start.y, end.y)
+                
+                elif entity.dxftype() == 'POLYLINE' or entity.dxftype() == 'LWPOLYLINE':
+                    # Handle polylines as connected walls
+                    try:
+                        points = list(entity.get_points())
+                        for i in range(len(points) - 1):
+                            start = points[i]
+                            end = points[i + 1]
+                            wall = {
+                                'start': {'x': float(start[0]), 'y': float(start[1])},
+                                'end': {'x': float(end[0]), 'y': float(end[1])},
+                                'layer': getattr(entity.dxf, 'layer', 'Default'),
+                                'type': 'polyline'
+                            }
+                            walls.append(wall)
+                            
+                            min_x = min(min_x, start[0], end[0])
+                            max_x = max(max_x, start[0], end[0])
+                            min_y = min(min_y, start[1], end[1])
+                            max_y = max(max_y, start[1], end[1])
+                    except:
+                        pass
                 
                 elif entity.dxftype() == 'CIRCLE':
-                    # Could represent doors or special zones
+                    # Identify doors or special zones
                     center = entity.dxf.center
                     radius = entity.dxf.radius
-                    if radius < 2:  # Small circles might be doors
-                        zones['entry_exit'].append({
-                            'x': center.x - radius,
-                            'y': center.y - radius,
-                            'width': radius * 2,
-                            'height': radius * 2
-                        })
+                    if 0.3 < radius < 3:  # Reasonable door size range
+                        door = {
+                            'x': float(center.x - radius),
+                            'y': float(center.y - radius),
+                            'width': float(radius * 2),
+                            'height': float(radius * 2),
+                            'type': 'door'
+                        }
+                        doors.append(door)
+                        zones['entry_exit'].append(door)
+                
+                elif entity.dxftype() == 'ARC':
+                    # Handle arcs (often doors)
+                    try:
+                        center = entity.dxf.center
+                        radius = entity.dxf.radius
+                        if 0.5 < radius < 2:  # Door size
+                            arc_door = {
+                                'x': float(center.x - radius),
+                                'y': float(center.y - radius),
+                                'width': float(radius * 2),
+                                'height': float(radius * 2),
+                                'type': 'arc_door'
+                            }
+                            zones['entry_exit'].append(arc_door)
+                    except:
+                        pass
             
-            # Calculate actual dimensions
-            width = max_x - min_x if max_x != float('-inf') else 20
-            height = max_y - min_y if max_y != float('-inf') else 15
+            # Calculate dimensions with proper scaling
+            if max_x == float('-inf'):
+                width, height = 20, 15  # Fallback
+            else:
+                width = float(max_x - min_x)
+                height = float(max_y - min_y)
+                
+                # Apply reasonable scaling if dimensions seem too large/small
+                if width > 1000 or height > 1000:  # Likely in mm, convert to meters
+                    width /= 1000
+                    height /= 1000
+                    # Scale all coordinates
+                    for wall in walls:
+                        wall['start']['x'] /= 1000
+                        wall['start']['y'] /= 1000
+                        wall['end']['x'] /= 1000
+                        wall['end']['y'] /= 1000
+                    for zone in zones['entry_exit']:
+                        zone['x'] /= 1000
+                        zone['y'] /= 1000
+                        zone['width'] /= 1000
+                        zone['height'] /= 1000
+                    min_x /= 1000
+                    min_y /= 1000
+                    max_x /= 1000
+                    max_y /= 1000
+            
+            # Filter walls and create zones array
+            zones['walls'] = walls
             
             return {
                 'id': plan_id,
