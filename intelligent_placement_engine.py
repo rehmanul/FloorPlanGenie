@@ -520,3 +520,95 @@ class IntelligentPlacementEngine:
             'layout_profile': profile,
             'connectivity_ratio': len(corridors) / len(boxes) if len(boxes) > 0 else 0
         }
+    
+    def _validate_constraints(self, new_position, new_dimensions, plan_data):
+        """Advanced real-time constraint validation"""
+        violations = []
+        
+        # Create the new box geometry
+        new_box = {
+            'x': new_position['x'],
+            'y': new_position['y'],
+            'width': new_dimensions['width'],
+            'height': new_dimensions['height']
+        }
+        
+        # Check wall proximity constraints
+        walls = plan_data.get('walls', [])
+        min_wall_distance = 0.5  # minimum distance from walls
+        
+        for wall in walls:
+            wall_line = LineString([(wall['start']['x'], wall['start']['y']), 
+                                   (wall['end']['x'], wall['end']['y'])])
+            box_polygon = Polygon([
+                (new_box['x'], new_box['y']),
+                (new_box['x'] + new_box['width'], new_box['y']),
+                (new_box['x'] + new_box['width'], new_box['y'] + new_box['height']),
+                (new_box['x'], new_box['y'] + new_box['height'])
+            ])
+            
+            distance = wall_line.distance(box_polygon)
+            if distance < min_wall_distance:
+                violations.append(f"Too close to wall (distance: {distance:.2f}m)")
+        
+        # Check boundary constraints
+        dimensions = plan_data['dimensions']
+        margin = 0.3
+        
+        if new_box['x'] < margin:
+            violations.append("Too close to left boundary")
+        if new_box['y'] < margin:
+            violations.append("Too close to bottom boundary")
+        if new_box['x'] + new_box['width'] > dimensions['width'] - margin:
+            violations.append("Too close to right boundary")
+        if new_box['y'] + new_box['height'] > dimensions['height'] - margin:
+            violations.append("Too close to top boundary")
+        
+        # Check restricted zones
+        zones = plan_data.get('zones', {})
+        restricted_zones = zones.get('no_entry', [])
+        
+        for zone in restricted_zones:
+            if 'polygon' in zone:
+                zone_polygon = Polygon(zone['polygon'])
+                box_polygon = Polygon([
+                    (new_box['x'], new_box['y']),
+                    (new_box['x'] + new_box['width'], new_box['y']),
+                    (new_box['x'] + new_box['width'], new_box['y'] + new_box['height']),
+                    (new_box['x'], new_box['y'] + new_box['height'])
+                ])
+                
+                if zone_polygon.intersects(box_polygon):
+                    violations.append("Intersects with restricted zone")
+        
+        return len(violations) == 0
+    
+    def _boxes_overlap(self, box1, box2):
+        """Check if two boxes overlap"""
+        return not (box1['x'] + box1['width'] <= box2['x'] or
+                   box2['x'] + box2['width'] <= box1['x'] or
+                   box1['y'] + box1['height'] <= box2['y'] or
+                   box2['y'] + box2['height'] <= box1['y'])
+    
+    def _generate_constraint_suggestions(self, violations):
+        """Generate intelligent suggestions for constraint violations"""
+        suggestions = []
+        
+        for violation in violations:
+            if "too close to wall" in violation.lower():
+                suggestions.append("Move the îlot further from the nearest wall (minimum 0.5m distance)")
+            elif "boundary" in violation.lower():
+                suggestions.append("Keep îlots within the safety margin (0.3m from boundaries)")
+            elif "overlap" in violation.lower():
+                suggestions.append("Ensure minimum spacing between îlots (1.0m recommended)")
+            elif "restricted zone" in violation.lower():
+                suggestions.append("Move îlot away from no-entry zones or architectural constraints")
+            else:
+                suggestions.append("Adjust îlot position to meet placement requirements")
+        
+        # Add general optimization suggestions
+        if len(violations) > 0:
+            suggestions.append("Consider using auto-optimization to find the best placement")
+            suggestions.append("Check the constraint visualization overlay for detailed guidance")
+        
+        return suggestions

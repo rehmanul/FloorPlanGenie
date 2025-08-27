@@ -54,6 +54,44 @@ class ModernUIController:
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
         }}
         
+        /* Navigation Header */
+        .nav-header {{
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }}
+        
+        .nav-btn {{
+            padding: 8px 16px;
+            background: rgba(37, 99, 235, 0.9);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }}
+        
+        .nav-btn:hover {{
+            background: rgba(37, 99, 235, 1);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }}
+        
+        .nav-btn.secondary {{
+            background: rgba(107, 114, 128, 0.9);
+        }}
+        
+        .nav-btn.secondary:hover {{
+            background: rgba(107, 114, 128, 1);
+        }}
+        
         /* Professional Sidebar */
         .sidebar {{
             width: 350px;
@@ -446,6 +484,16 @@ class ModernUIController:
     </style>
 </head>
 <body>
+    <!-- Navigation Header -->
+    <div class="nav-header">
+        <a href="/" class="nav-btn secondary">
+            <i class="fas fa-chart-bar"></i> Standard Interface
+        </a>
+        <button class="nav-btn" onclick="location.reload()">
+            <i class="fas fa-sync"></i> Refresh
+        </button>
+    </div>
+    
     <div class="app-container">
         <!-- Professional Sidebar -->
         <div class="sidebar">
@@ -528,6 +576,20 @@ class ModernUIController:
                         <label>Width (m)</label>
                         <input type="number" class="property-input" id="corridor-width" value="1.2" step="0.1" min="0.8">
                     </div>
+                </div>
+                
+                <!-- Upload Section -->
+                <div class="property-group">
+                    <h4>File Upload</h4>
+                    <div class="upload-area-pro" style="border: 2px dashed rgba(255,255,255,0.3); border-radius: 8px; padding: 20px; text-align: center; margin-bottom: 15px; cursor: pointer;">
+                        <input type="file" id="fileInputPro" accept=".pdf,.dwg,.dxf,.jpg,.jpeg,.png" style="display: none;">
+                        <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: #60a5fa; margin-bottom: 10px; display: block;"></i>
+                        <p style="color: #e5e7eb; font-size: 0.875rem; margin-bottom: 5px;">Drop files here or click to browse</p>
+                        <p style="color: #9ca3af; font-size: 0.75rem;">DXF, DWG, PDF, JPG, PNG</p>
+                    </div>
+                    <button class="action-btn" onclick="uploadFilePro()" style="width: 100%; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: 500;">
+                        <i class="fas fa-upload"></i> Upload & Process
+                    </button>
                 </div>
                 
                 <div class="property-group">
@@ -945,6 +1007,53 @@ class ModernUIController:
     </script>
 </body>
 </html>'''
+        
+        html_content += '''
+
+        <!-- Professional Interface JavaScript -->
+        <script>
+        // Professional upload functionality
+        function uploadFilePro() {
+            const fileInput = document.getElementById('fileInputPro');
+            if (fileInput.files.length === 0) {
+                alert('Please select a file first');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Refresh the professional interface with new data
+                    window.location.reload();
+                } else {
+                    alert('Upload failed: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Upload error:', error);
+                alert('Upload failed');
+            });
+        }
+        
+        // Set up click event for upload area
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.querySelector('.upload-area-pro');
+            const fileInput = document.getElementById('fileInputPro');
+            
+            if (uploadArea && fileInput) {
+                uploadArea.addEventListener('click', function() {
+                    fileInput.click();
+                });
+            }
+        });
+        </script>
         
         return html_content
     

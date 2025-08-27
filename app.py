@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, render_template_string
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -53,6 +53,67 @@ visual_generator = VisualGenerator()
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/professional')
+def professional():
+    """Serve the professional interface"""
+    try:
+        # Initialize professional interface components
+        from advanced_cad_processor import AdvancedCADProcessor
+        from intelligent_placement_engine import IntelligentPlacementEngine
+        from interactive_canvas import InteractiveCanvasRenderer
+        from modern_ui_controller import ModernUIController
+        
+        cad_processor = AdvancedCADProcessor()
+        placement_engine = IntelligentPlacementEngine()
+        canvas_renderer = InteractiveCanvasRenderer()
+        ui_controller = ModernUIController()
+        
+        # Generate modern interface with default data
+        default_data = {
+            'dimensions': {'width': 50, 'height': 40},
+            'statistics': {
+                'total_boxes': 0,
+                'utilization_rate': 0,
+                'total_corridors': 0,
+                'efficiency_score': 0
+            }
+        }
+        
+        html_content = ui_controller.generate_modern_interface_html(default_data)
+        return render_template_string(html_content)
+        
+    except Exception as e:
+        print(f"Error serving professional interface: {e}")
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/professional/<plan_id>')
+def professional_with_plan(plan_id):
+    """Professional interface with specific plan loaded"""
+    try:
+        # Initialize professional interface components
+        from advanced_cad_processor import AdvancedCADProcessor
+        cad_processor = AdvancedCADProcessor()
+        
+        # Get plan data
+        plan_data = plan_processor.get_plan_data(plan_id)
+        if not plan_data:
+            # Try advanced processor
+            plan_data = cad_processor.get_plan_data(plan_id)
+        
+        if not plan_data:
+            return jsonify({'error': 'Plan not found'}), 404
+        
+        # Generate professional interface with plan data
+        from modern_ui_controller import ModernUIController
+        ui_controller = ModernUIController()
+        html_content = ui_controller.generate_modern_interface_html(plan_data)
+        
+        return render_template_string(html_content)
+        
+    except Exception as e:
+        print(f"Error serving professional interface with plan: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/upload', methods=['POST'])
 def upload_file():

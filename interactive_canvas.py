@@ -509,3 +509,198 @@ class InteractiveCanvasRenderer:
             f.write(html_content)
         
         return html_filepath
+    
+    def _generate_single_step(self, data, width, height):
+        """Generate comprehensive single-step visualization"""
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as patches
+        from datetime import datetime
+        
+        # Create high-resolution figure
+        fig, ax = plt.subplots(1, 1, figsize=(16, 12))
+        fig.patch.set_facecolor('white')
+        
+        # Set up the plot
+        ax.set_xlim(0, width)
+        ax.set_ylim(0, height)
+        ax.set_aspect('equal')
+        ax.set_title('Complete Floor Plan Optimization', fontsize=16, fontweight='bold')
+        
+        # Draw walls
+        walls = data.get('walls', [])
+        for wall in walls:
+            start = (wall['start']['x'], wall['start']['y'])
+            end = (wall['end']['x'], wall['end']['y'])
+            ax.plot([start[0], end[0]], [start[1], end[1]], 
+                   color=self.colors['walls'], linewidth=3, solid_capstyle='round')
+        
+        # Draw zones
+        zones = data.get('zones', {})
+        
+        # Restricted zones
+        for zone in zones.get('no_entry', []):
+            if 'polygon' in zone:
+                polygon = patches.Polygon(zone['polygon'], alpha=0.3, 
+                                        facecolor=self.colors['restricted'],
+                                        edgecolor=self.colors['restricted'], linewidth=2)
+                ax.add_patch(polygon)
+        
+        # Entry/exit zones
+        for zone in zones.get('entry_exit', []):
+            if 'polygon' in zone:
+                polygon = patches.Polygon(zone['polygon'], alpha=0.4, 
+                                        facecolor=self.colors['entry_exit'],
+                                        edgecolor=self.colors['entry_exit'], linewidth=2)
+                ax.add_patch(polygon)
+        
+        # Draw îlots
+        boxes = data.get('boxes', [])
+        for i, box in enumerate(boxes):
+            rect = patches.Rectangle((box['x'], box['y']), box['width'], box['height'],
+                                   facecolor=self.colors['ilots'], edgecolor='darkgreen',
+                                   linewidth=2, alpha=0.8)
+            ax.add_patch(rect)
+            
+            # Add îlot labels
+            center_x = box['x'] + box['width'] / 2
+            center_y = box['y'] + box['height'] / 2
+            ax.text(center_x, center_y, f'Î{i+1}', ha='center', va='center',
+                   fontsize=10, fontweight='bold', color='white')
+        
+        # Draw corridors
+        corridors = data.get('corridors', [])
+        for corridor in corridors:
+            rect = patches.Rectangle((corridor['x'], corridor['y']), 
+                                   corridor['width'], corridor['height'],
+                                   facecolor=self.colors['corridors'], alpha=0.6,
+                                   edgecolor='orange', linewidth=1)
+            ax.add_patch(rect)
+        
+        # Add comprehensive legend
+        legend_elements = [
+            patches.Patch(color=self.colors['walls'], label='Walls'),
+            patches.Patch(color=self.colors['ilots'], label='Îlots'),
+            patches.Patch(color=self.colors['corridors'], label='Corridors'),
+            patches.Patch(color=self.colors['restricted'], label='Restricted Zones'),
+            patches.Patch(color=self.colors['entry_exit'], label='Entry/Exit Zones')
+        ]
+        ax.legend(handles=legend_elements, loc='upper right', bbox_to_anchor=(1, 1))
+        
+        # Add statistics text box
+        stats = data.get('statistics', {})
+        stats_text = f"""Statistics:
+• Total Îlots: {stats.get('total_boxes', 0)}
+• Total Corridors: {stats.get('total_corridors', 0)}
+• Space Utilization: {stats.get('utilization_rate', 0):.1f}%
+• Efficiency Score: {stats.get('efficiency_score', 0):.1f}
+• Total Area: {width * height:.0f}m²"""
+        
+        ax.text(0.02, 0.98, stats_text, transform=ax.transAxes, fontsize=10,
+               verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
+        
+        # Style the plot
+        ax.grid(True, alpha=0.3)
+        ax.set_xlabel('Width (m)', fontsize=12)
+        ax.set_ylabel('Height (m)', fontsize=12)
+        
+        # Save the visualization
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"comprehensive_plan_{timestamp}.png"
+        filepath = os.path.join(self.output_dir, filename)
+        
+        plt.savefig(filepath, dpi=300, bbox_inches='tight', facecolor='white')
+        plt.close()
+        
+        return filepath
+    
+    def _generate_pdf_export(self, plan_data):
+        """Generate professional PDF export using ReportLab"""
+        from reportlab.lib.pagesizes import A4, landscape
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Table, TableStyle
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.units import inch
+        from reportlab.lib import colors
+        from reportlab.graphics.shapes import Drawing, Rect, Line, String
+        from reportlab.graphics import renderPDF
+        from datetime import datetime
+        
+        # Create PDF document
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"floorplan_export_{timestamp}.pdf"
+        filepath = os.path.join(self.output_dir, filename)
+        
+        doc = SimpleDocTemplate(filepath, pagesize=landscape(A4),
+                              rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
+        
+        # Build content
+        story = []
+        styles = getSampleStyleSheet()
+        
+        # Title
+        title_style = ParagraphStyle('CustomTitle', parent=styles['Heading1'],
+                                   fontSize=24, spaceAfter=30, textColor=colors.HexColor('#2563EB'))
+        story.append(Paragraph("FloorPlanGenie - Professional Floor Plan Report", title_style))
+        story.append(Spacer(1, 12))
+        
+        # Project information
+        info_style = ParagraphStyle('Info', parent=styles['Normal'], fontSize=12, spaceAfter=6)
+        story.append(Paragraph(f"<b>Generated:</b> {datetime.now().strftime('%B %d, %Y at %I:%M %p')}", info_style))
+        story.append(Paragraph(f"<b>Plan ID:</b> {plan_data.get('id', 'N/A')}", info_style))
+        story.append(Paragraph(f"<b>Dimensions:</b> {plan_data['dimensions']['width']}m × {plan_data['dimensions']['height']}m", info_style))
+        story.append(Spacer(1, 20))
+        
+        # Generate and include visualization
+        visual_path = self._generate_single_step(plan_data, 
+                                                plan_data['dimensions']['width'],
+                                                plan_data['dimensions']['height'])
+        story.append(Image(visual_path, width=7*inch, height=5.25*inch))
+        story.append(Spacer(1, 20))
+        
+        # Statistics table
+        stats = plan_data.get('statistics', {})
+        stats_data = [
+            ['Metric', 'Value'],
+            ['Total Îlots', str(stats.get('total_boxes', 0))],
+            ['Total Corridors', str(stats.get('total_corridors', 0))],
+            ['Space Utilization', f"{stats.get('utilization_rate', 0):.1f}%"],
+            ['Efficiency Score', f"{stats.get('efficiency_score', 0):.1f}"],
+            ['Total Area', f"{plan_data['dimensions']['width'] * plan_data['dimensions']['height']:.0f}m²"],
+            ['Box Area', f"{stats.get('box_area', 0):.1f}m²"],
+            ['Corridor Area', f"{stats.get('corridor_area', 0):.1f}m²"],
+            ['Average Spacing', f"{stats.get('average_box_spacing', 0):.1f}m"],
+        ]
+        
+        stats_table = Table(stats_data, colWidths=[3*inch, 2*inch])
+        stats_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2563EB')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        
+        story.append(Paragraph("Optimization Statistics", styles['Heading2']))
+        story.append(Spacer(1, 12))
+        story.append(stats_table)
+        
+        # Technical details
+        story.append(Spacer(1, 20))
+        story.append(Paragraph("Technical Details", styles['Heading2']))
+        story.append(Spacer(1, 12))
+        
+        tech_details = f"""
+        <b>Optimization Algorithm:</b> {plan_data.get('optimization_metadata', {}).get('algorithm', 'Multi-objective genetic algorithm')}<br/>
+        <b>Layout Profile:</b> {plan_data.get('layout_profile', '25%')} coverage<br/>
+        <b>Walls Detected:</b> {len(plan_data.get('walls', []))}<br/>
+        <b>Zones Identified:</b> {len(plan_data.get('zones', {}).get('entry_exit', [])) + len(plan_data.get('zones', {}).get('no_entry', []))}<br/>
+        <b>Processing Method:</b> {plan_data.get('metadata', {}).get('processing_method', 'Advanced layer-aware processing')}
+        """
+        story.append(Paragraph(tech_details, styles['Normal']))
+        
+        # Build PDF
+        doc.build(story)
+        
+        return filepath

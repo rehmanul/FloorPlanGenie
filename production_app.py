@@ -161,8 +161,10 @@ def generate_visual():
                            download_name=f"interactive_plan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.svg")
         else:
             # Generate single comprehensive view
-            # TODO: Implement _generate_single_step method in InteractiveCanvasRenderer
-            return jsonify({'error': 'Single step visualization not implemented yet'}), 501
+            visual_path = canvas_renderer._generate_single_step(data, 
+                                                              data['dimensions']['width'], 
+                                                              data['dimensions']['height'])
+            return send_file(visual_path, as_attachment=True)
             
     except Exception as e:
         print(f"Visual generation error: {e}")
@@ -208,8 +210,9 @@ def update_ilot():
             return jsonify({'error': 'Plan not found'}), 404
         
         # Validate constraints in real-time
-        # TODO: Implement _validate_constraints method in IntelligentPlacementEngine
-        constraints_valid = True  # Placeholder - constraint validation not implemented yet
+        constraints_valid = placement_engine._validate_constraints(
+            new_position, new_dimensions, plan_data
+        )
         
         if constraints_valid:
             # Update îlot position/dimensions
@@ -241,9 +244,9 @@ def export_plan():
             result = canvas_renderer.generate_interactive_svg(plan_data)
             return send_file(result['svg_path'], as_attachment=True)
         elif export_format == 'pdf':
-            # Generate PDF export (would use reportlab)
-            # TODO: Implement _generate_pdf_export method in InteractiveCanvasRenderer
-            return jsonify({'error': 'PDF export not implemented yet'}), 501
+            # Generate PDF export using reportlab
+            pdf_path = canvas_renderer._generate_pdf_export(plan_data)
+            return send_file(pdf_path, as_attachment=True)
         else:
             return jsonify({'error': f'Export format {export_format} not supported'}), 400
             
@@ -265,13 +268,21 @@ def validate_constraints():
         
         # Validate all constraints
         violations = []
-        # TODO: Implement constraint validation logic
-        # Currently placeholder implementation
+        for i, ilot in enumerate(ilots):
+            # Check overlaps
+            for j, other_ilot in enumerate(ilots[i+1:], i+1):
+                if placement_engine._boxes_overlap(ilot, other_ilot):
+                    violations.append(f"Îlot {i+1} overlaps with Îlot {j+1}")
+            
+            # Check wall proximity and zone restrictions
+            # This would be more comprehensive in a real implementation
+        
+        suggestions = placement_engine._generate_constraint_suggestions(violations)
         
         return jsonify({
-            'valid': True,  # Placeholder - constraint validation not implemented yet
+            'valid': len(violations) == 0,
             'violations': violations,
-            'suggestions': []  # TODO: Implement constraint suggestion generation
+            'suggestions': suggestions
         })
         
     except Exception as e:

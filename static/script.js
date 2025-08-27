@@ -389,3 +389,28 @@ class FloorPlanGenieAdvanced {
 document.addEventListener('DOMContentLoaded', () => {
     new FloorPlanGenieAdvanced();
 });
+
+// Global variable to store current plan ID
+let currentPlanId = null;
+
+// Professional mode navigation functions
+function goToProfessional() {
+    window.location.href = '/professional';
+}
+
+function goToProfessionalWithPlan() {
+    if (currentPlanId) {
+        window.location.href = `/professional/${currentPlanId}`;
+    } else {
+        // If no plan ID, just go to professional interface
+        goToProfessional();
+    }
+}
+
+// Show professional button after file upload
+function showProfessionalButton() {
+    const professionalBtn = document.getElementById('professionalBtn');
+    if (professionalBtn) {
+        professionalBtn.style.display = 'block';
+    }
+}
