@@ -121,18 +121,19 @@ body {
 /* Sidebar */
 .sidebar {
     background: white;
-    border-radius: calc(6px * var(--scale));
+    border-radius: 8px;
     box-shadow: var(--shadow-light);
-    height: calc(100vh - calc(80px * var(--scale)));
-    max-height: calc(100vh - calc(80px * var(--scale)));
-    overflow-y: scroll !important;
-    overflow-x: hidden !important;
+    height: calc(100vh - 80px);
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    overflow-x: hidden;
     position: sticky;
-    top: calc(0.7rem * var(--scale));
+    top: 1rem;
     display: flex;
     flex-direction: column;
     scrollbar-width: thin;
     scrollbar-color: #ccc transparent;
+    z-index: 10;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -154,8 +155,11 @@ body {
 
 .sidebar-section {
     border-bottom: 1px solid var(--border-gray);
-    padding: 0.62rem;
+    padding: 1rem;
     flex-shrink: 0;
+    background: white;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
 }
 
 .sidebar-section:last-child {
@@ -176,13 +180,18 @@ body {
 .upload-area {
     border: 3px dashed #3b82f6;
     border-radius: 16px;
-    padding: 3rem 1.5rem;
+    padding: 2rem 1rem;
     text-align: center;
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(16, 185, 129, 0.1));
     transition: all 0.3s ease;
     cursor: pointer;
     margin-bottom: 1rem;
     box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+    position: relative;
+    display: block;
+    min-height: 150px;
+    width: 100%;
+    z-index: 10;
 }
 
 .upload-area:hover {
@@ -198,18 +207,21 @@ body {
 }
 
 .upload-icon {
-    font-size: 4rem;
+    font-size: 3rem;
     color: #3b82f6;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
     display: block;
     filter: drop-shadow(0 4px 8px rgba(59, 130, 246, 0.3));
 }
 
 .upload-text {
     color: #1f2937;
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     font-weight: 600;
-    line-height: 1.6;
+    line-height: 1.4;
+    display: block;
+    position: relative;
+    z-index: 11;
 }
 
 .upload-text strong {
