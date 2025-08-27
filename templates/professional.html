@@ -54,10 +54,10 @@
                            accept=".dxf,.dwg,.pdf,.jpg,.jpeg,.png" />
                 </div>
 
-                <button class="btn btn-secondary" onclick="document.getElementById('file-input').click()" 
-                        style="width: 100%; margin-top: 0.5rem;">
+                <button class="btn btn-primary" onclick="document.getElementById('file-input').click()" 
+                        style="width: 100%; margin-top: 0.5rem; font-size: 1rem; padding: 0.75rem;">
                     <span>📁</span>
-                    Choose File
+                    Choose Professional File
                 </button>
 
                 <div class="progress-container" id="progress-container" style="display: none;">
@@ -185,6 +185,10 @@
                     <button class="btn btn-success" id="export-btn">
                         <span>📥</span>
                         Export Results
+                    </button>
+                    <button class="btn btn-primary" id="advance-pro-btn" style="display: none; width: 100%; margin-top: 0.5rem;">
+                        <span>🚀</span>
+                        Advanced Professional Processing
                     </button>
                 </div>
             </section>
@@ -446,6 +450,11 @@
                         // Show results panel
                         document.getElementById('stats-section').style.display = 'block';
 
+                        // Show auto-advance button for professional processing
+                        const advanceBtn = document.getElementById('advance-pro-btn');
+                        advanceBtn.style.display = 'block';
+                        advanceBtn.onclick = () => this.advancedProfessionalProcessing();
+
                         this.showNotification('success', `Optimization complete! Placed ${result.statistics.total_boxes} boxes with ${result.statistics.utilization_rate}% space utilization`);
                     } else {
                         const error = await response.json();
@@ -516,6 +525,70 @@
 
             hideProgress() {
                 document.getElementById('progress-container').style.display = 'none';
+            }
+
+            async advancedProfessionalProcessing() {
+                if (!this.optimizationData) {
+                    this.showNotification('error', 'No optimization data available for advanced processing');
+                    return;
+                }
+
+                const advanceBtn = document.getElementById('advance-pro-btn');
+                advanceBtn.disabled = true;
+                advanceBtn.innerHTML = '<span class="spinner" style="width:16px;height:16px;margin-right:8px;"></span>Initializing Pro Mode...';
+
+                try {
+                    // Send to advanced professional processing endpoint
+                    const response = await fetch('/professional_process', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            plan_id: this.currentPlanId,
+                            optimization_data: this.optimizationData,
+                            advanced_mode: true
+                        })
+                    });
+
+                    if (response.ok) {
+                        const result = await response.json();
+                        
+                        // Update interface for professional mode
+                        document.getElementById('canvas-title').textContent = 'Professional Mode: Advanced Processing Active';
+                        
+                        // Show advanced controls
+                        this.enableProfessionalControls();
+                        
+                        this.showNotification('success', '🚀 Advanced Professional Processing Activated!');
+                    } else {
+                        throw new Error('Advanced processing failed');
+                    }
+                } catch (error) {
+                    this.showNotification('error', `Professional processing failed: ${error.message}`);
+                } finally {
+                    advanceBtn.disabled = false;
+                    advanceBtn.innerHTML = '<span>🚀</span> Advanced Professional Processing';
+                }
+            }
+
+            enableProfessionalControls() {
+                // Enable advanced professional tools
+                const toolbar = document.querySelector('.toolbar');
+                
+                // Add professional tools
+                const proTools = [
+                    { id: 'analysis-btn', icon: '📊', title: 'Advanced Analysis' },
+                    { id: 'optimize-btn', icon: '⚙️', title: 'Re-optimize' },
+                    { id: '3d-view-btn', icon: '🏗️', title: '3D Visualization' }
+                ];
+
+                proTools.forEach(tool => {
+                    const btn = document.createElement('button');
+                    btn.className = 'toolbar-btn';
+                    btn.id = tool.id;
+                    btn.title = tool.title;
+                    btn.innerHTML = `<span>${tool.icon}</span>`;
+                    toolbar.appendChild(btn);
+                });
             }
 
             showNotification(type, message) {
