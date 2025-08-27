@@ -42,13 +42,15 @@
                     Project Files
                 </h3>
 
-                <div class="upload-area" id="upload-area" style="display: block !important; visibility: visible !important;">
-                    <div class="upload-icon">📐</div>
-                    <div class="upload-text">
-                        <strong>Upload Your Floor Plan</strong><br>
-                        Supports: DXF, DWG, PDF, JPG, PNG<br>
-                        <small>📤 Drag & drop files here or click to browse</small><br>
-                        <small style="color: #059669;">✓ Professional CAD files supported</small>
+                <div class="upload-area" id="upload-area" style="display: block !important; visibility: visible !important; position: relative; z-index: 100; background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(16, 185, 129, 0.15)) !important; border: 3px dashed #3b82f6 !important; min-height: 180px !important; padding: 2rem !important;">
+                    <div class="upload-icon" style="font-size: 4rem; color: #3b82f6; display: block; text-align: center;">📐</div>
+                    <div class="upload-text" style="color: #1f2937; font-weight: 600; text-align: center; font-size: 1.1rem;">
+                        <strong style="color: #3b82f6; font-size: 1.3rem;">🏗️ UPLOAD YOUR FLOOR PLAN</strong><br><br>
+                        <div style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0; border: 1px solid #e5e7eb;">
+                            📁 <strong>Supports:</strong> DXF, DWG, PDF, JPG, PNG<br>
+                            📤 <strong>Click here or drag & drop files</strong><br>
+                            <span style="color: #059669; font-weight: bold;">✅ Professional CAD files supported</span>
+                        </div>
                     </div>
                     <input type="file" class="file-input" id="file-input" 
                            accept=".dxf,.dwg,.pdf,.jpg,.jpeg,.png" style="display: none;" />
@@ -456,6 +458,13 @@
                         advanceBtn.onclick = () => this.advancedProfessionalProcessing();
 
                         this.showNotification('success', `Optimization complete! Placed ${result.statistics.total_boxes} boxes with ${result.statistics.utilization_rate}% space utilization`);
+                        
+                        // Show workflow message
+                        this.showWorkflowMessage(`
+                            ✅ OPTIMIZATION COMPLETE!
+                            📊 Now click "Advanced Professional Processing" button below to proceed to the next level.
+                            🚀 This will activate production-grade architectural analysis.
+                        `);
                     } else {
                         const error = await response.json();
                         throw new Error(error.error || 'Optimization failed');
@@ -601,6 +610,46 @@
                 setTimeout(() => {
                     notification.remove();
                 }, 5000);
+            }
+
+            showWorkflowMessage(message) {
+                const workflowMsg = document.createElement('div');
+                workflowMsg.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: linear-gradient(135deg, #10b981, #059669);
+                    color: white;
+                    padding: 2rem;
+                    border-radius: 12px;
+                    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+                    z-index: 2000;
+                    max-width: 500px;
+                    text-align: center;
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    white-space: pre-line;
+                `;
+                workflowMsg.textContent = message;
+                
+                const closeBtn = document.createElement('button');
+                closeBtn.textContent = 'Got it! ✓';
+                closeBtn.style.cssText = `
+                    margin-top: 1rem;
+                    padding: 0.75rem 1.5rem;
+                    background: white;
+                    color: #059669;
+                    border: none;
+                    border-radius: 6px;
+                    font-weight: 600;
+                    cursor: pointer;
+                `;
+                closeBtn.onclick = () => workflowMsg.remove();
+                
+                workflowMsg.appendChild(document.createElement('br'));
+                workflowMsg.appendChild(closeBtn);
+                document.body.appendChild(workflowMsg);
             }
         }
 

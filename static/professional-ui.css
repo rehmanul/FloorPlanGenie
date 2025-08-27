@@ -178,20 +178,22 @@ body {
 
 /* File Upload Area */
 .upload-area {
-    border: 3px dashed #3b82f6;
-    border-radius: 16px;
-    padding: 2rem 1rem;
-    text-align: center;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(16, 185, 129, 0.1));
-    transition: all 0.3s ease;
-    cursor: pointer;
-    margin-bottom: 1rem;
-    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
-    position: relative;
-    display: block;
-    min-height: 150px;
-    width: 100%;
-    z-index: 10;
+    border: 3px dashed #3b82f6 !important;
+    border-radius: 16px !important;
+    padding: 2rem 1rem !important;
+    text-align: center !important;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(16, 185, 129, 0.15)) !important;
+    transition: all 0.3s ease !important;
+    cursor: pointer !important;
+    margin-bottom: 1rem !important;
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.25) !important;
+    position: relative !important;
+    display: block !important;
+    visibility: visible !important;
+    min-height: 180px !important;
+    width: 100% !important;
+    z-index: 100 !important;
+    opacity: 1 !important;
 }
 
 .upload-area:hover {
