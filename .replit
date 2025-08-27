@@ -9,7 +9,7 @@ runButton = "Start FloorPlanGenie"
 
 [[workflows.workflow]]
 name = "Start FloorPlanGenie"
-author = 46956461
+author = "agent"
 mode = "sequential"
 
 [[workflows.workflow.tasks]]
