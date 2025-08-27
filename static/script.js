@@ -72,6 +72,14 @@ class FloorPlanGenieAdvanced {
                 body: formData
             });
 
+            if (!response.ok) {
+                // Handle non-200 responses
+                if (response.status === 413) {
+                    throw new Error('File too large. Maximum size is 50MB.');
+                }
+                throw new Error(`Server error: ${response.status}`);
+            }
+
             const result = await response.json();
 
             if (result.success) {
