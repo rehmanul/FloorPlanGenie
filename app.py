@@ -117,15 +117,24 @@ def professional_with_plan(plan_id):
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file provided'}), 400
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
 
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
 
-    if file and file.filename:
-        filename = secure_filename(file.filename or "upload")
+        if not file.filename:
+            return jsonify({'error': 'Invalid filename'}), 400
+
+        # Check file extension
+        allowed_extensions = {'dxf', 'dwg', 'pdf', 'png', 'jpg', 'jpeg'}
+        file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+        if file_ext not in allowed_extensions:
+            return jsonify({'error': f'File type .{file_ext} not supported. Please upload DXF, DWG, PDF, or image files.'}), 400
+
+        filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
 
@@ -161,6 +170,9 @@ def upload_file():
         except Exception as e:
             print(f"Upload processing error: {e}")
             return jsonify({'error': f'Error processing file: {str(e)}'}), 500
+    except Exception as e:
+        print(f"Upload error: {e}")
+        return jsonify({'error': f'Upload failed: {str(e)}'}), 500
 
 @app.route('/optimize', methods=['POST'])
 def optimize_space():

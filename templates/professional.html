@@ -459,7 +459,7 @@
                         advanceBtn.onclick = () => this.advancedProfessionalProcessing();
 
                         this.showNotification('success', `Optimization complete! Placed ${result.statistics.total_boxes} boxes with ${result.statistics.utilization_rate}% space utilization`);
-                        
+
                         // Show workflow message
                         this.showWorkflowMessage(`
                             ✅ OPTIMIZATION COMPLETE!
@@ -561,13 +561,13 @@
 
                     if (response.ok) {
                         const result = await response.json();
-                        
+
                         // Update interface for professional mode
                         document.getElementById('canvas-title').textContent = 'Professional Mode: Advanced Processing Active';
-                        
+
                         // Show advanced controls
                         this.enableProfessionalControls();
-                        
+
                         this.showNotification('success', '🚀 Advanced Professional Processing Activated!');
                     } else {
                         throw new Error('Advanced processing failed');
@@ -583,7 +583,7 @@
             enableProfessionalControls() {
                 // Enable advanced professional tools
                 const toolbar = document.querySelector('.toolbar');
-                
+
                 // Add professional tools
                 const proTools = [
                     { id: 'analysis-btn', icon: '📊', title: 'Advanced Analysis' },
@@ -633,7 +633,7 @@
                     white-space: pre-line;
                 `;
                 workflowMsg.textContent = message;
-                
+
                 const closeBtn = document.createElement('button');
                 closeBtn.textContent = 'Got it! ✓';
                 closeBtn.style.cssText = `
@@ -647,7 +647,7 @@
                     cursor: pointer;
                 `;
                 closeBtn.onclick = () => workflowMsg.remove();
-                
+
                 workflowMsg.appendChild(document.createElement('br'));
                 workflowMsg.appendChild(closeBtn);
                 document.body.appendChild(workflowMsg);
