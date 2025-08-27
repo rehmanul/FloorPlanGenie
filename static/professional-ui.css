@@ -14,7 +14,7 @@
     --text-light: #666;
     --shadow: 0 1.18px 4.72px rgba(0,0,0,0.15);
     --shadow-light: 0 0.59px 1.77px rgba(0,0,0,0.1);
-    --scale: 0.59;
+    --scale: 1.0;
 }
 
 * {
@@ -101,12 +101,12 @@ body {
 /* Main Layout */
 .professional-layout {
     display: grid;
-    grid-template-columns: calc(300px * var(--scale)) 1fr;
-    min-height: calc(100vh - calc(56px * var(--scale)));
-    max-width: calc(1400px * var(--scale));
+    grid-template-columns: 320px 1fr;
+    min-height: calc(100vh - 70px);
+    max-width: 1400px;
     margin: 0 auto;
-    gap: calc(0.7rem * var(--scale));
-    padding: calc(0.7rem * var(--scale));
+    gap: 1rem;
+    padding: 1rem;
 }
 
 @media (max-width: 1200px) {

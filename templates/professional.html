@@ -80,12 +80,12 @@
                     <div class="parameter-grid">
                         <div>
                             <input type="number" class="control-input" 
-                                   id="box-width" value="1.0" step="0.1" min="0.1" max="20">
+                                   id="box-width" value="0.8" step="0.1" min="0.1" max="20">
                             <small>Width (m)</small>
                         </div>
                         <div>
                             <input type="number" class="control-input" 
-                                   id="box-height" value="1.2" step="0.1" min="0.1" max="20">
+                                   id="box-height" value="1.0" step="0.1" min="0.1" max="20">
                             <small>Height (m)</small>
                         </div>
                     </div>
@@ -216,15 +216,18 @@
 
             <div class="canvas-container" id="canvas-container">
                 <!-- Welcome message -->
-                <div class="welcome-message" id="welcome-message" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: #6b7280;">
+                <div class="welcome-message" id="welcome-message" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: #6b7280; background: #f9f9f9; border: 2px dashed #ddd; border-radius: 8px; margin: 20px;">
                     <div style="font-size: 4rem; margin-bottom: 1rem;">🏗️</div>
-                    <h2 style="color: #1f2937; margin-bottom: 0.5rem;">Professional Floor Plan Editor</h2>
-                    <p style="margin-bottom: 1.5rem; font-size: 1.1rem;">Upload a floor plan to get started with optimization</p>
-                    <div style="background: #f3f4f6; padding: 1rem; border-radius: 8px; max-width: 400px;">
+                    <h2 style="color: #1f2937; margin-bottom: 0.5rem;">Professional Floor Plan Editor Ready</h2>
+                    <p style="margin-bottom: 1.5rem; font-size: 1.1rem; color: #059669; font-weight: bold;">✅ System Active - Upload a floor plan to begin</p>
+                    <div style="background: #f3f4f6; padding: 1rem; border-radius: 8px; max-width: 400px; border: 1px solid #e5e5e5;">
                         <p><strong>📋 Step 1:</strong> Upload your DXF/DWG file in the left sidebar</p>
-                        <p><strong>⚙️ Step 2:</strong> Configure optimization settings</p>
+                        <p><strong>⚙️ Step 2:</strong> Configure box dimensions for your space size</p>
                         <p><strong>🎯 Step 3:</strong> Click "Optimize Layout"</p>
                         <p><strong>📥 Step 4:</strong> Export your optimized results</p>
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
+                        <p>💡 Tip: For small spaces, use smaller box dimensions (0.5m × 0.6m)</p>
                     </div>
                 </div>
 
@@ -373,11 +376,21 @@
                         const welcomeMsg = document.getElementById('welcome-message');
                         if (welcomeMsg) welcomeMsg.style.display = 'none';
 
+                        // Auto-adjust box dimensions based on space size
+                        const maxDim = Math.max(result.dimensions.width, result.dimensions.height);
+                        if (maxDim < 10) { // Small space
+                            document.getElementById('box-width').value = Math.min(0.8, result.dimensions.width / 3).toFixed(1);
+                            document.getElementById('box-height').value = Math.min(1.0, result.dimensions.height / 3).toFixed(1);
+                            document.getElementById('corridor-width').value = '0.8';
+                            document.getElementById('corridor-value').textContent = '0.8m';
+                            this.showNotification('info', 'Box dimensions auto-adjusted for small space');
+                        }
+
                         // Update status bar
                         this.updateStatusBar(result.dimensions);
 
                         document.getElementById('optimize-btn').disabled = false;
-                        document.getElementById('canvas-title').textContent = `Floor Plan: ${file.name}`;
+                        document.getElementById('canvas-title').textContent = `Floor Plan: ${file.name} (${result.dimensions.width.toFixed(1)}m × ${result.dimensions.height.toFixed(1)}m)`;
 
                         this.showProgress('Complete!', 100);
                         setTimeout(() => this.hideProgress(), 1000);
