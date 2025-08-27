@@ -1,4 +1,3 @@
-
 class FloorPlanGenieAdvanced {
     constructor() {
         this.currentPlanId = null;
@@ -14,16 +13,16 @@ class FloorPlanGenieAdvanced {
     setupEventListeners() {
         // File input
         document.getElementById('fileInput').addEventListener('change', (e) => this.handleFileSelect(e));
-        
+
         // Optimize button
         document.getElementById('optimizeBtn').addEventListener('click', () => this.optimizeLayout());
-        
+
         // Download button
         document.getElementById('downloadBtn').addEventListener('click', () => this.downloadResult());
-        
+
         // Regenerate button
         document.getElementById('regenerateBtn').addEventListener('click', () => this.regenerateLayout());
-        
+
         // Configuration changes
         ['boxWidth', 'boxHeight', 'corridorWidth'].forEach(id => {
             document.getElementById(id).addEventListener('change', () => this.updateConfiguration());
@@ -32,32 +31,90 @@ class FloorPlanGenieAdvanced {
 
     setupDragAndDrop() {
         const uploadArea = document.getElementById('uploadArea');
-        
+
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
         });
-        
+
         uploadArea.addEventListener('dragleave', () => {
             uploadArea.classList.remove('dragover');
         });
-        
+
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
             this.handleFiles(e.dataTransfer.files);
         });
-        
+
         uploadArea.addEventListener('click', () => {
             document.getElementById('fileInput').click();
         });
     }
 
-    handleFileSelect(e) {
-        this.handleFiles(e.target.files);
+    handleFileSelect(event) {
+        const files = event.target.files;
+        if (files.length === 0) return;
+
+        this.showProgress(true, 'Uploading and processing...');
+
+        const formData = new FormData();
+        formData.append('file', files[0]);
+
+        try {
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.currentPlanId = result.plan_id;
+                this.updateUploadStatus('✅ File processed successfully!');
+                this.displayPlanInfo(result);
+                this.displayProcessedPlan(result);
+            } else {
+                this.updateUploadStatus('❌ Error: ' + result.error);
+            }
+        } catch (error) {
+            this.updateUploadStatus('❌ Upload failed: ' + error.message);
+        } finally {
+            this.showProgress(false);
+        }
     }
 
-    async handleFiles(files) {
+    displayProcessedPlan(result) {
+        // Show the processed plan visual
+        if (result.visual_path) {
+            // Show in results section
+            const resultImage = document.getElementById('resultImage');
+            resultImage.src = result.visual_path + '?t=' + Date.now(); // Cache busting
+            resultImage.style.display = 'block';
+
+            // Show in processed plan section
+            const processedSection = document.getElementById('processedPlanSection');
+            const processedImage = document.getElementById('processedPlanImage');
+            if (processedSection && processedImage) {
+                processedImage.src = result.visual_path + '?t=' + Date.now();
+                processedSection.style.display = 'block';
+
+                // Update plan info
+                document.getElementById('planDimensions').textContent = `${result.dimensions.width}m × ${result.dimensions.height}m`;
+                document.getElementById('wallsCount').textContent = result.walls ? result.walls.length : '0';
+                document.getElementById('zonesCount').textContent = result.zones ? 
+                    (result.zones.no_entry?.length || 0) + (result.zones.entry_exit?.length || 0) : '0';
+            }
+
+            // Update statistics with initial plan info
+            document.getElementById('totalBoxes').textContent = '0';
+            document.getElementById('totalCorridors').textContent = '0';
+            document.getElementById('utilizationRate').textContent = '0%';
+            document.getElementById('totalArea').textContent = `${(result.dimensions.width * result.dimensions.height).toFixed(1)} m²`;
+        }
+    }
+
+    handleFiles(files) {
         if (files.length === 0) return;
 
         const file = files[0];
@@ -92,7 +149,7 @@ class FloorPlanGenieAdvanced {
     displayPlanInfo(planData) {
         // Display basic plan information
         console.log('Plan data:', planData);
-        
+
         // Could add a preview section here showing detected walls, zones, etc.
     }
 
@@ -106,7 +163,7 @@ class FloorPlanGenieAdvanced {
 
         try {
             const config = this.getConfiguration();
-            
+
             const response = await fetch('/optimize', {
                 method: 'POST',
                 headers: {
@@ -140,7 +197,7 @@ class FloorPlanGenieAdvanced {
 
         try {
             const outputFormat = document.getElementById('outputFormat').value;
-            
+
             const response = await fetch('/generate_visual', {
                 method: 'POST',
                 headers: {
@@ -155,7 +212,7 @@ class FloorPlanGenieAdvanced {
             if (response.ok) {
                 const blob = await response.blob();
                 const imageUrl = URL.createObjectURL(blob);
-                
+
                 const resultImage = document.getElementById('resultImage');
                 resultImage.src = imageUrl;
                 resultImage.style.display = 'block';
@@ -225,9 +282,9 @@ class FloorPlanGenieAdvanced {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
-        
+
         document.body.appendChild(notification);
-        
+
         // Auto remove after 5 seconds
         setTimeout(() => {
             if (notification.parentNode) {

@@ -40,12 +40,24 @@ def upload_file():
         # Process the plan
         try:
             plan_data = plan_processor.process_plan(filepath)
+            
+            # Generate initial visual of the processed plan
+            initial_visual_data = {
+                'walls': plan_data['walls'],
+                'zones': plan_data['zones'],
+                'dimensions': plan_data['dimensions']
+            }
+            
+            # Generate visual representation
+            visual_path = visual_generator.generate(initial_visual_data, '2d')
+            
             return jsonify({
                 'success': True,
                 'plan_id': plan_data['id'],
                 'dimensions': plan_data['dimensions'],
                 'walls': plan_data['walls'],
-                'zones': plan_data['zones']
+                'zones': plan_data['zones'],
+                'visual_path': visual_path.replace('static/', '/static/')  # Convert to web path
             })
         except Exception as e:
             return jsonify({'error': str(e)}), 500
@@ -72,6 +84,24 @@ def optimize_space():
             'corridors': optimization_result['corridors'],
             'statistics': optimization_result['statistics']
         })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/get_plan_visual/<plan_id>')
+def get_plan_visual(plan_id):
+    try:
+        plan_data = plan_processor.get_plan_data(plan_id)
+        
+        # Create visual data
+        visual_data = {
+            'walls': plan_data['walls'],
+            'zones': plan_data['zones'],
+            'dimensions': plan_data['dimensions']
+        }
+        
+        # Generate and return visual
+        visual_path = visual_generator.generate(visual_data, '2d')
+        return send_file(visual_path, mimetype='image/png')
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

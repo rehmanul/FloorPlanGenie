@@ -1,4 +1,3 @@
-
 /* Modern FloorPlanGenie Styles */
 * {
     margin: 0;
@@ -299,8 +298,8 @@ header p {
 
 .legend-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
 }
 
 .legend-item {
@@ -379,27 +378,27 @@ header p {
         padding: 1rem;
         gap: 1rem;
     }
-    
+
     header h1 {
         font-size: 2rem;
     }
-    
+
     header p {
         font-size: 1rem;
     }
-    
+
     .config-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .stats-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .legend-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .download-buttons {
         flex-direction: column;
     }
@@ -421,4 +420,42 @@ h3 {
     margin-bottom: 1rem;
     color: #333;
     font-weight: 600;
+}
+
+.processed-plan-section {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 25px;
+}
+
+.plan-preview {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.plan-preview img {
+    max-width: 400px;
+    max-height: 300px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    object-fit: contain;
+}
+
+.plan-info {
+    flex: 1;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.plan-info p {
+    margin: 8px 0;
+    font-size: 14px;
+}
+
+.plan-info strong {
+    color: #2c3e50;
 }
