@@ -21,8 +21,11 @@ class PlanProcessor:
         file_ext = os.path.splitext(filepath)[1].lower()
         
         try:
-            if file_ext in ['.dwg', '.dxf']:
+            if file_ext in ['.dxf']:
                 plan_data = self._process_cad_file(filepath, plan_id)
+            elif file_ext in ['.dwg']:
+                # For DWG files, provide clear guidance
+                raise ValueError(f"DWG files need to be converted to DXF format first. Please convert {filepath} to DXF using AutoCAD or a free converter, then upload the DXF file.")
             elif file_ext == '.pdf':
                 plan_data = self._process_pdf_file(filepath, plan_id)
             elif file_ext in ['.jpg', '.jpeg', '.png']:

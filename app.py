@@ -101,12 +101,17 @@ def optimize_space():
             plan_data, box_dimensions, corridor_width
         )
         
-        return jsonify({
+        # Include dimensional data for visualization
+        result_data = {
             'success': True,
             'boxes': optimization_result['boxes'],
             'corridors': optimization_result['corridors'],
-            'statistics': optimization_result['statistics']
-        })
+            'statistics': optimization_result['statistics'],
+            'dimensions': plan_data['dimensions'],  # Add dimensions for visual generation
+            'walls': plan_data['walls']  # Add walls for visual generation
+        }
+        
+        return jsonify(result_data)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
