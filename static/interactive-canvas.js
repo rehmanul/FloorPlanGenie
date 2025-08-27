@@ -402,6 +402,30 @@ class InteractiveFloorPlanCanvas {
         });
     }
 
+    renderZones(zones, scale) {
+        if (!zones || zones.length === 0) return;
+        
+        zones.forEach((zone, index) => {
+            if (zone.points && zone.points.length > 2) {
+                const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+                
+                // Convert points to SVG polygon format
+                const points = zone.points.map(point => 
+                    `${point.x * scale},${point.y * scale}`
+                ).join(' ');
+                
+                polygon.setAttribute("points", points);
+                polygon.setAttribute("fill", "rgba(173, 216, 230, 0.3)");
+                polygon.setAttribute("stroke", "rgba(173, 216, 230, 0.8)");
+                polygon.setAttribute("stroke-width", "1");
+                polygon.setAttribute("class", "zone");
+                polygon.setAttribute("data-zone-id", index);
+
+                this.layers.annotations.appendChild(polygon);
+            }
+        });
+    }
+
     renderBoxes(boxes, scale) {
         boxes.forEach((box, index) => {
             const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");

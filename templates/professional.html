@@ -449,7 +449,7 @@
                         }
 
                         // Hide welcome message and show canvas
-                        const welcomeMsg = document.getElementById('welcome-message');
+                        const welcomeMsg = document.querySelector('.welcome-message, #welcome-message, .placeholder-content');
                         if (welcomeMsg) {
                             welcomeMsg.style.display = 'none';
                             console.log('Welcome message hidden');
@@ -475,7 +475,12 @@
                         this.updateStatusBar(result.dimensions);
 
                         document.getElementById('optimize-btn').disabled = false;
-                        document.getElementById('canvas-title').textContent = `Floor Plan: ${file.name} (${result.dimensions.width.toFixed(1)}m × ${result.dimensions.height.toFixed(1)}m)`;
+                        
+                        // Update canvas title if element exists
+                        const canvasTitle = document.getElementById('canvas-title');
+                        if (canvasTitle) {
+                            canvasTitle.textContent = `Floor Plan: ${file.name} (${result.dimensions.width.toFixed(1)}m × ${result.dimensions.height.toFixed(1)}m)`;
+                        }
 
                         this.showProgress('Complete!', 100);
                         setTimeout(() => this.hideProgress(), 1000);
