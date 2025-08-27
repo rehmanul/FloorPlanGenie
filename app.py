@@ -63,7 +63,7 @@ def upload_file():
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
 
-    if file:
+    if file and file.filename:
         filename = secure_filename(file.filename or "upload")
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
