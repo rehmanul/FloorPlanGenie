@@ -31,11 +31,11 @@ class SpaceOptimizer:
         usable_bounds = self._calculate_usable_bounds(width, height, walls)
         
         # Auto-adjust box dimensions if they're too large for the space
-        max_box_width = min(box_width, usable_bounds['width'] / 4)  # Allow room for multiple boxes
-        max_box_height = min(box_height, usable_bounds['height'] / 4)
+        max_box_width = min(box_width, usable_bounds['width'] / 2)  # Allow room for at least 2 boxes
+        max_box_height = min(box_height, usable_bounds['height'] / 2)
         
-        # Ensure minimum viable box size
-        min_box_size = 0.1  # 10cm minimum
+        # Ensure minimum viable box size but make it proportional to space
+        min_box_size = min(0.1, min(usable_bounds['width'], usable_bounds['height']) / 10)
         max_box_width = max(max_box_width, min_box_size)
         max_box_height = max(max_box_height, min_box_size)
         
