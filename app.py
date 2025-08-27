@@ -95,6 +95,8 @@ def optimize_space():
 def get_plan_visual(plan_id):
     try:
         plan_data = plan_processor.get_plan_data(plan_id)
+        if not plan_data:
+            return jsonify({'error': 'Plan not found'}), 404
         
         # Create visual data
         visual_data = {

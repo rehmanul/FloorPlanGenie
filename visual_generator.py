@@ -24,7 +24,7 @@ class VisualGenerator:
             for wall in data['walls']:
                 start = wall['start']
                 end = wall['end']
-                ax.plot([start[0], end[0]], [start[1], end[1]], 'k-', linewidth=3)
+                ax.plot([start['x'], end['x']], [start['y'], end['y']], 'k-', linewidth=3)
 
         # Draw boxes if present
         if 'boxes' in data:
