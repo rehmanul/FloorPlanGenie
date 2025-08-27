@@ -1091,6 +1091,7 @@ dependencies = [
     { name = "rtree" },
     { name = "scipy" },
     { name = "shapely" },
+    { name = "sqlalchemy" },
     { name = "svglib" },
     { name = "werkzeug" },
 ]
@@ -1115,6 +1116,7 @@ requires-dist = [
     { name = "rtree", specifier = ">=1.4.1" },
     { name = "scipy", specifier = ">=1.16.1" },
     { name = "shapely", specifier = ">=2.1.1" },
+    { name = "sqlalchemy", specifier = ">=2.0.43" },
     { name = "svglib", specifier = ">=1.5.1" },
     { name = "werkzeug", specifier = ">=3.1.3" },
 ]

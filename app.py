@@ -267,12 +267,15 @@ def advanced_optimize():
 def interactive_visual():
     """Generate interactive visual"""
     try:
-        data = request.json
+        data = request.json or {}
 
-        # Generate visual using the visual generator
-        visual_generator = VisualGenerator()
-        result = visual_generator.generate_interactive_visual(data)
-
+        # Generate visual using the existing visual generator method
+        visual_path = visual_generator.generate(data, '2d')
+        
+        result = {
+            'success': True,
+            'visual_path': visual_path.replace('static/', '/static/') if visual_path else None
+        }
         return jsonify(result)
 
     except Exception as e:
@@ -283,7 +286,7 @@ def interactive_visual():
 def professional_process():
     """Advanced professional processing after optimization"""
     try:
-        data = request.json
+        data = request.json or {}
         plan_id = data.get('plan_id')
         optimization_data = data.get('optimization_data')
 
