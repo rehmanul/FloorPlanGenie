@@ -1,4 +1,3 @@
-
 class ProfessionalUI {
     constructor() {
         this.currentPlanId = null;
@@ -6,42 +5,42 @@ class ProfessionalUI {
         this.isProcessing = false;
         this.init();
     }
-    
+
     init() {
         this.setupEventListeners();
         this.setupFileUpload();
     }
-    
+
     setupEventListeners() {
         // Optimization button
         const optimizeBtn = document.getElementById('optimizeBtn');
         if (optimizeBtn) {
             optimizeBtn.addEventListener('click', () => this.runOptimization());
         }
-        
+
         // Control inputs
         const inputs = document.querySelectorAll('.control-input');
         inputs.forEach(input => {
             input.addEventListener('change', () => this.onParameterChange());
         });
     }
-    
+
     setupFileUpload() {
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
-        
+
         if (!uploadArea || !fileInput) return;
-        
+
         // Drag and drop
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('drag-over');
         });
-        
+
         uploadArea.addEventListener('dragleave', () => {
             uploadArea.classList.remove('drag-over');
         });
-        
+
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('drag-over');
@@ -50,12 +49,12 @@ class ProfessionalUI {
                 this.uploadFile(files[0]);
             }
         });
-        
+
         // Click to upload
         uploadArea.addEventListener('click', () => {
             fileInput.click();
         });
-        
+
         // File input change
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
@@ -63,24 +62,24 @@ class ProfessionalUI {
             }
         });
     }
-    
+
     async uploadFile(file) {
         if (this.isProcessing) return;
-        
+
         this.isProcessing = true;
         this.showProgress('Uploading file...');
-        
+
         const formData = new FormData();
         formData.append('file', file);
-        
+
         try {
             const response = await fetch('/upload', {
                 method: 'POST',
                 body: formData
             });
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
                 this.currentPlanId = result.plan_id;
                 this.showProgress('File uploaded successfully!');
@@ -97,7 +96,7 @@ class ProfessionalUI {
             this.isProcessing = false;
         }
     }
-    
+
     displayPlanData(planData) {
         // Update canvas with plan visualization
         const canvasContainer = document.getElementById('canvasContainer');
@@ -113,7 +112,7 @@ class ProfessionalUI {
                 </div>
             `;
         }
-        
+
         // Enable optimization button
         const optimizeBtn = document.getElementById('optimizeBtn');
         if (optimizeBtn) {
@@ -121,13 +120,13 @@ class ProfessionalUI {
             optimizeBtn.textContent = '🚀 Optimize Placement';
         }
     }
-    
+
     async runOptimization() {
         if (!this.currentPlanId || this.isProcessing) return;
-        
+
         this.isProcessing = true;
         this.showProgress('Optimizing layout...');
-        
+
         const formData = {
             plan_id: this.currentPlanId,
             layout_profile: document.getElementById('layoutProfile')?.value || '25%',
@@ -135,16 +134,16 @@ class ProfessionalUI {
             box_height: parseFloat(document.getElementById('boxHeight')?.value || 4.0),
             corridor_width: parseFloat(document.getElementById('corridorWidth')?.value || 1.2)
         };
-        
+
         try {
             const response = await fetch('/optimize', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
                 this.currentOptimization = result;
                 this.updateStatistics(result.statistics);
@@ -161,10 +160,10 @@ class ProfessionalUI {
             this.hideProgress();
         }
     }
-    
+
     async generateVisual() {
         if (!this.currentOptimization) return;
-        
+
         try {
             const response = await fetch('/generate_visual', {
                 method: 'POST',
@@ -174,11 +173,11 @@ class ProfessionalUI {
                     format: '2d'
                 })
             });
-            
+
             if (response.ok) {
                 const blob = await response.blob();
                 const url = URL.createObjectURL(blob);
-                
+
                 const canvasContainer = document.getElementById('canvasContainer');
                 canvasContainer.innerHTML = `
                     <div class="optimization-result">
@@ -190,41 +189,41 @@ class ProfessionalUI {
             console.error('Visual generation error:', error);
         }
     }
-    
+
     updateStatistics(stats) {
         if (!stats) return;
-        
+
         const elements = {
             'totalBoxes': stats.total_boxes || 0,
             'utilizationRate': `${(stats.utilization_rate || 0).toFixed(1)}%`,
             'totalCorridors': stats.total_corridors || 0,
             'efficiencyScore': (stats.efficiency_score || 0).toFixed(0)
         };
-        
+
         Object.entries(elements).forEach(([id, value]) => {
             const element = document.getElementById(id);
             if (element) element.textContent = value;
         });
     }
-    
+
     showProgress(message) {
         const canvasContainer = document.getElementById('canvasContainer');
         const loadingDiv = document.getElementById('canvasLoading');
-        
+
         if (loadingDiv) {
             loadingDiv.style.display = 'flex';
             const messageP = loadingDiv.querySelector('p');
             if (messageP) messageP.textContent = message;
         }
     }
-    
+
     hideProgress() {
         const loadingDiv = document.getElementById('canvasLoading');
         if (loadingDiv) {
             loadingDiv.style.display = 'none';
         }
     }
-    
+
     showError(message) {
         const canvasContainer = document.getElementById('canvasContainer');
         canvasContainer.innerHTML = `
@@ -238,42 +237,42 @@ class ProfessionalUI {
             </div>
         `;
     }
-    
+
     onParameterChange() {
         // Auto-optimize if plan is loaded
                 this.handleFileUpload(files[0]);
             }
         });
-        
+
         // Click upload
         uploadArea.addEventListener('click', () => {
             fileInput.click();
         });
-        
+
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 this.handleFileUpload(e.target.files[0]);
             }
         });
     }
-    
+
     async handleFileUpload(file) {
         if (this.isProcessing) return;
-        
+
         this.showLoading(true, 'Processing CAD file...');
         this.isProcessing = true;
-        
+
         const formData = new FormData();
         formData.append('file', file);
-        
+
         try {
             const response = await fetch('/upload', {
                 method: 'POST',
                 body: formData
             });
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
                 this.currentPlanId = result.plan_id;
                 this.displayPlanData(result);
@@ -288,13 +287,13 @@ class ProfessionalUI {
             this.isProcessing = false;
         }
     }
-    
+
     async runOptimization() {
         if (!this.currentPlanId || this.isProcessing) return;
-        
+
         this.showLoading(true, 'Optimizing placement...');
         this.isProcessing = true;
-        
+
         const params = {
             plan_id: this.currentPlanId,
             layout_profile: document.getElementById('layoutProfile').value,
@@ -306,7 +305,7 @@ class ProfessionalUI {
                 height: parseFloat(document.getElementById('boxHeight').value)
             }
         };
-        
+
         try {
             const response = await fetch('/advanced_optimize', {
                 method: 'POST',
@@ -315,9 +314,9 @@ class ProfessionalUI {
                 },
                 body: JSON.stringify(params)
             });
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
                 this.currentOptimization = result;
                 this.displayOptimizationResults(result);
@@ -333,17 +332,17 @@ class ProfessionalUI {
             this.isProcessing = false;
         }
     }
-    
+
     displayPlanData(planData) {
         const container = document.getElementById('canvasContainer');
         if (!container) return;
-        
+
         // Remove placeholder
         const placeholder = container.querySelector('.canvas-placeholder');
         if (placeholder) {
             placeholder.style.display = 'none';
         }
-        
+
         // Add basic plan visualization
         const planInfo = document.createElement('div');
         planInfo.className = 'plan-info';
@@ -355,22 +354,22 @@ class ProfessionalUI {
             <p>Zones: ${planData.zones?.length || 0}</p>
             <p>Doors: ${planData.doors?.length || 0}</p>
         `;
-        
+
         container.innerHTML = '';
         container.appendChild(planInfo);
     }
-    
+
     displayOptimizationResults(results) {
         const container = document.getElementById('canvasContainer');
         if (!container) return;
-        
+
         // Create results display
         const resultsDiv = document.createElement('div');
         resultsDiv.className = 'optimization-results';
-        
+
         const ilots = results.ilots || results.boxes || [];
         const corridors = results.corridors || [];
-        
+
         resultsDiv.innerHTML = `
             <h3>🎯 Optimization Results</h3>
             <div class="results-grid">
@@ -391,7 +390,7 @@ class ProfessionalUI {
                     <span>Efficiency Score</span>
                 </div>
             </div>
-            
+
             <div class="ilots-list">
                 <h4>Îlot Details:</h4>
                 ${ilots.map((ilot, index) => `
@@ -402,56 +401,120 @@ class ProfessionalUI {
                     </div>
                 `).join('')}
             </div>
-            
+
             <button class="btn btn-primary" onclick="professionalUI.generateInteractiveView()">
                 🎨 Generate Interactive View
             </button>
         `;
-        
+
         container.innerHTML = '';
         container.appendChild(resultsDiv);
     }
-    
+
     async generateInteractiveView() {
-        if (!this.currentOptimization) return;
-        
-        this.showLoading(true, 'Generating interactive visualization...');
-        
+        if (!this.currentOptimization) {
+            this.showNotification('No optimization results to visualize', 'error');
+            return;
+        }
+
         try {
             const response = await fetch('/interactive_visual', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(this.currentOptimization)
             });
-            
+
             const result = await response.json();
-            
+
             if (result.success) {
-                this.displayInteractiveView(result.visual_path, result.svg_string);
+                // Display interactive view
+                const container = document.getElementById('canvasContainer');
+                container.innerHTML = `
+                    <div class="interactive-view">
+                        <h4>🎨 Interactive Floor Plan</h4>
+                        <iframe src="${result.visual_path}" style="width: 100%; height: 600px; border: 1px solid #ddd; border-radius: 8px;"></iframe>
+                        <div class="view-info">
+                            <p>✅ Interactive zoom and pan enabled</p>
+                            <p>🎯 Click elements to select and inspect</p>
+                        </div>
+                    </div>
+                `;
                 this.showNotification('Interactive view generated!', 'success');
             } else {
-                this.showNotification(`Error generating view: ${result.error}`, 'error');
+                throw new Error(result.error || 'Failed to generate interactive view');
             }
         } catch (error) {
-            this.showNotification(`Visualization error: ${error.message}`, 'error');
-        } finally {
-            this.showLoading(false);
+            console.error('Interactive view error:', error);
+            this.showNotification(`Interactive view failed: ${error.message}`, 'error');
         }
     }
-    
+
+    async generatePixelPerfectView() {
+        if (!this.currentOptimization) {
+            this.showNotification('No optimization results to visualize', 'error');
+            return;
+        }
+
+        try {
+            this.showProgress('Generating pixel-perfect view...');
+
+            const response = await fetch('/interactive_visual_pro', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(this.currentOptimization)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Display pixel-perfect view
+                const container = document.getElementById('canvasContainer');
+                container.innerHTML = `
+                    <div class="pixel-perfect-view">
+                        <div class="view-header">
+                            <h4>✨ Pixel-Perfect Professional View</h4>
+                            <div class="feature-badges">
+                                ${result.features.map(feature => `<span class="feature-badge">${feature}</span>`).join('')}
+                            </div>
+                        </div>
+                        <div class="svg-container" style="border: 2px solid #667eea; border-radius: 12px; overflow: hidden;">
+                            ${result.svg_content}
+                        </div>
+                        <div class="pro-controls">
+                            <p>🎯 <strong>Professional Features Active:</strong></p>
+                            <ul>
+                                <li>🔍 Zoom with mouse wheel</li>
+                                <li>🖱️ Pan by clicking and dragging</li>
+                                <li>📍 Click any element to select</li>
+                                <li>🎨 Architectural-grade styling</li>
+                                <li>📏 Pixel-perfect measurements</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                this.showNotification('Pixel-perfect view generated! 🚀', 'success');
+            } else {
+                throw new Error(result.error || 'Failed to generate pixel-perfect view');
+            }
+        } catch (error) {
+            console.error('Pixel-perfect view error:', error);
+            this.showNotification(`Pixel-perfect view failed: ${error.message}`, 'error');
+        } finally {
+            this.hideProgress();
+        }
+    }
+
     displayInteractiveView(visualPath, svgString) {
         const container = document.getElementById('canvasContainer');
         if (!container) return;
-        
+
         if (svgString) {
             container.innerHTML = svgString;
         } else if (visualPath) {
             container.innerHTML = `<img src="${visualPath}" alt="Interactive Floor Plan" style="max-width: 100%; height: auto;">`;
         }
     }
-    
+
     updateStatistics(statistics) {
         const updates = {
             totalBoxes: statistics?.total_boxes || statistics?.total_ilots || 0,
@@ -459,7 +522,7 @@ class ProfessionalUI {
             totalCorridors: statistics?.total_corridors || 0,
             efficiencyScore: (statistics?.efficiency_score || 0).toFixed(0)
         };
-        
+
         Object.entries(updates).forEach(([id, value]) => {
             const element = document.getElementById(id);
             if (element) {
@@ -467,7 +530,7 @@ class ProfessionalUI {
             }
         });
     }
-    
+
     showLoading(show, message = 'Processing...') {
         const loading = document.getElementById('canvasLoading');
         if (loading) {
@@ -480,7 +543,7 @@ class ProfessionalUI {
             }
         }
     }
-    
+
     showNotification(message, type = 'info') {
         // Create notification
         const notification = document.createElement('div');
@@ -498,7 +561,7 @@ class ProfessionalUI {
             max-width: 300px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         `;
-        
+
         // Set color based on type
         switch(type) {
             case 'success':
@@ -510,9 +573,9 @@ class ProfessionalUI {
             default:
                 notification.style.backgroundColor = '#3B82F6';
         }
-        
+
         document.body.appendChild(notification);
-        
+
         // Remove after 5 seconds
         setTimeout(() => {
             if (notification.parentNode) {
@@ -520,7 +583,7 @@ class ProfessionalUI {
             }
         }, 5000);
     }
-    
+
     onParameterChange() {
         // Handle parameter changes - could trigger real-time preview
         console.log('Parameters changed');
@@ -533,9 +596,9 @@ function exportPlan(format) {
         professionalUI.showNotification('No optimization data to export', 'error');
         return;
     }
-    
+
     professionalUI.showLoading(true, `Exporting as ${format.toUpperCase()}...`);
-    
+
     fetch('/export_plan', {
         method: 'POST',
         headers: {

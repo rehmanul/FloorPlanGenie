@@ -339,16 +339,16 @@
                     console.log('Upload area clicked');
                     fileInput.click();
                 });
-                
+
                 uploadArea.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     uploadArea.classList.add('dragging');
                 });
-                
+
                 uploadArea.addEventListener('dragleave', () => {
                     uploadArea.classList.remove('dragging');
                 });
-                
+
                 uploadArea.addEventListener('drop', (e) => {
                     e.preventDefault();
                     uploadArea.classList.remove('dragging');
@@ -373,11 +373,7 @@
                         fileInput.click();
                     });
                 }
-                        e.preventDefault();
-                        fileInput.click();
-                    });
-                }
-
+                
                 // Optimization
                 document.getElementById('optimize-btn').addEventListener('click', () => {
                     this.optimizeLayout();
@@ -423,7 +419,7 @@
 
                         this.currentPlanId = result.plan_id;
                         console.log('Plan loaded successfully:', this.currentPlanId);
-                        
+
                         // Load plan data into canvas
                         if (this.canvas && this.canvas.loadPlanData) {
                             this.canvas.loadPlanData(result);

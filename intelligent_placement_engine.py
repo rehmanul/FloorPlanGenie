@@ -359,7 +359,7 @@ class IntelligentPlacementEngine:
                 # Check if line intersects walls or restricted areas
                 valid_connection = True
                 for wall in building_geometry.get('walls', []):
-                    if line.intersects(wall['geometry']):
+                    if hasattr(wall.get('geometry'), 'intersects') and line.intersects(wall['geometry']):
                         valid_connection = False
                         break
                 
@@ -379,6 +379,58 @@ class IntelligentPlacementEngine:
                 corridor = self._create_corridor(ilot1, ilot2, corridor_width)
                 if corridor:
                     corridors.append(corridor)
+        else:
+            # Fallback: create grid-based corridors
+            corridors = self._create_grid_corridors(ilots, corridor_width, building_geometry)
+        
+        return corridors
+    
+    def _create_grid_corridors(self, ilots: List[Dict[str, Any]], corridor_width: float,
+                              building_geometry: Dict[str, Any]) -> List[Dict[str, Any]]:
+        """Create grid-based corridor system when MST fails"""
+        corridors = []
+        
+        if not ilots:
+            return corridors
+        
+        # Group îlots by approximate rows and columns
+        y_positions = sorted(set(ilot['y'] for ilot in ilots), key=lambda y: round(y))
+        x_positions = sorted(set(ilot['x'] for ilot in ilots), key=lambda x: round(x))
+        
+        boundary = building_geometry.get('boundary')
+        if boundary:
+            bounds = boundary.bounds
+        else:
+            bounds = (
+                min(x_positions) - 5, min(y_positions) - 5,
+                max(x_positions) + 5, max(y_positions) + 5
+            )
+        
+        # Create horizontal corridors
+        for y_pos in y_positions:
+            corridors.append({
+                'type': 'horizontal',
+                'start': {'x': bounds[0], 'y': y_pos},
+                'end': {'x': bounds[2], 'y': y_pos},
+                'width': corridor_width,
+                'length': bounds[2] - bounds[0],
+                'area': (bounds[2] - bounds[0]) * corridor_width,
+                'color': self.corridor_config['color'],
+                'id': f"h_corridor_{len(corridors)}"
+            })
+        
+        # Create vertical corridors
+        for x_pos in x_positions:
+            corridors.append({
+                'type': 'vertical',
+                'start': {'x': x_pos, 'y': bounds[1]},
+                'end': {'x': x_pos, 'y': bounds[3]},
+                'width': corridor_width,
+                'length': bounds[3] - bounds[1],
+                'area': (bounds[3] - bounds[1]) * corridor_width,
+                'color': self.corridor_config['color'],
+                'id': f"v_corridor_{len(corridors)}"
+            })
         
         return corridors
     

@@ -27,9 +27,17 @@ class SpaceOptimizer:
         original_width, original_height = box_dimensions['width'], box_dimensions['height'] # Store original for print statement
 
         # Auto-adjust box size if too large for space or if dimensions are too small
-        if width < 5 or height < 5:
-            # Scale up very small dimensions (likely in different units)
-            scale_factor = 100 if width < 1 else 10
+        if width < 1 or height < 1:
+            # Scale up very small dimensions (likely in points/inches to meters)
+            if width < 0.01:  # Likely points or similar
+                scale_factor = 100
+            else:
+                scale_factor = 50
+            width *= scale_factor
+            height *= scale_factor
+        elif width < 5 or height < 5:
+            # Scale up small dimensions
+            scale_factor = 20
             width *= scale_factor
             height *= scale_factor
 
@@ -90,12 +98,12 @@ class SpaceOptimizer:
     def _genetic_algorithm_placement(self, bounds, box_width, box_height, corridor_width):
         """Use genetic algorithm to find optimal box placement"""
 
-        # Calculate maximum possible boxes
-        max_boxes_x = int(bounds['width'] // (box_width + corridor_width))
-        max_boxes_y = int(bounds['height'] // (box_height + corridor_width))
+        # Calculate maximum possible boxes with safe bounds
+        max_boxes_x = max(1, int(bounds['width'] // (box_width + corridor_width)))
+        max_boxes_y = max(1, int(bounds['height'] // (box_height + corridor_width)))
         max_boxes = max_boxes_x * max_boxes_y
 
-        if max_boxes == 0:
+        if max_boxes == 0 or max_boxes_x == 0 or max_boxes_y == 0:
             return {'boxes': [], 'score': 0}
 
         # Define fitness function

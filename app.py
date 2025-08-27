@@ -16,6 +16,7 @@ try:
     from intelligent_placement_engine import IntelligentPlacementEngine
     from interactive_canvas import InteractiveCanvasRenderer
     from modern_ui_controller import ModernUIController
+    from pixel_perfect_renderer import PixelPerfectRenderer
     PRODUCTION_MODE = True
 except ImportError as e:
     print(f"Production components not available: {e}")
@@ -70,6 +71,7 @@ if PRODUCTION_MODE:
         intelligent_placement_engine = IntelligentPlacementEngine()
         interactive_canvas_renderer = InteractiveCanvasRenderer()
         modern_ui_controller = ModernUIController()
+        pixel_perfect_renderer = PixelPerfectRenderer()
         print("✅ Production-grade components initialized successfully")
     except Exception as e:
         print(f"❌ Error initializing production components: {e}")

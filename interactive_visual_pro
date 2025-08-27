@@ -1,0 +1,34 @@
+
+@app.route('/interactive_visual_pro', methods=['POST'])
+def interactive_visual_pro():
+    """Generate production-grade interactive visual with pixel-perfect rendering"""
+    if not PRODUCTION_MODE:
+        return jsonify({'error': 'Professional visuals require production mode'}), 400
+    
+    try:
+        data = request.json or {}
+        
+        # Generate pixel-perfect interactive SVG
+        svg_content = pixel_perfect_renderer.generate_interactive_svg(data)
+        
+        # Save SVG file
+        svg_path = pixel_perfect_renderer.save_svg(svg_content)
+        
+        return jsonify({
+            'success': True,
+            'visual_path': svg_path.replace('static/', '/static/'),
+            'interactive': True,
+            'pixel_perfect': True,
+            'svg_content': svg_content,
+            'features': [
+                'Real-time zoom/pan like Google Maps',
+                'Click to select elements',
+                'Professional architectural styling',
+                'Interactive legend and controls',
+                'Pixel-perfect SVG rendering'
+            ]
+        })
+
+    except Exception as e:
+        print(f"Error in interactive_visual_pro: {e}")
+        return jsonify({'error': str(e)}), 500
