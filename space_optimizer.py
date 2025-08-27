@@ -30,6 +30,15 @@ class SpaceOptimizer:
         # Get usable area (avoid walls and boundaries)
         usable_bounds = self._calculate_usable_bounds(width, height, walls)
         
+        # Auto-adjust box dimensions if they're too large for the space
+        max_box_width = min(box_width, usable_bounds['width'] / 3)
+        max_box_height = min(box_height, usable_bounds['height'] / 3)
+        
+        if max_box_width < box_width or max_box_height < box_height:
+            print(f"Auto-adjusting box size from {box_width}x{box_height} to {max_box_width:.2f}x{max_box_height:.2f} to fit space")
+            box_width = max_box_width
+            box_height = max_box_height
+        
         # Use genetic algorithm for optimal placement
         optimization_result = self._genetic_algorithm_placement(
             usable_bounds, box_width, box_height, corridor_width

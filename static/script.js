@@ -218,6 +218,14 @@ class FloorPlanGenieAdvanced {
             if (result.success) {
                 this.optimizationResult = result;
                 this.displayOptimizationResult(result);
+                
+                // Show results section prominently
+                const resultsSection = document.getElementById('resultsSection');
+                if (resultsSection) {
+                    resultsSection.style.display = 'block';
+                    resultsSection.scrollIntoView({ behavior: 'smooth' });
+                }
+                
                 await this.generateVisual(result);
                 this.showNotification('Layout optimized successfully!', 'success');
             } else {
