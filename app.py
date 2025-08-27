@@ -133,12 +133,20 @@ def get_plan_visual(plan_id):
 @app.route('/generate_visual', methods=['POST'])
 def generate_visual():
     data = request.json
-    output_format = data.get('format', '2d')  # 2d, 3d, pdf
+    output_format = data.get('format', '2d')
+    
+    print(f"Generating visual with format: {output_format}")
+    print(f"Data keys: {list(data.keys()) if data else 'None'}")
     
     try:
+        # Ensure we have the required data structure
+        if not data or 'boxes' not in data:
+            return jsonify({'error': 'No optimization data provided for visualization'}), 400
+            
         visual_path = visual_generator.generate(data, output_format)
         return send_file(visual_path, as_attachment=True)
     except Exception as e:
+        print(f"Visual generation error: {e}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
