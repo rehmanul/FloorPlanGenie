@@ -1,4 +1,3 @@
-
 class FloorPlanGenieAdvanced {
     constructor() {
         this.currentPlanId = null;
@@ -45,10 +44,11 @@ class FloorPlanGenieAdvanced {
             uploadArea.classList.remove('dragover');
         });
 
-        uploadArea.addEventListener('drop', (e) => {
+        uploadArea.addEventListener('drop', async (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
-            this.handleFiles(e.dataTransfer.files);
+            const files = Array.from(e.dataTransfer.files);
+            await this.handleFiles(files);
         });
 
         uploadArea.addEventListener('click', () => {
@@ -192,23 +192,24 @@ class FloorPlanGenieAdvanced {
 
     async optimizeLayout() {
         if (!this.currentPlanId) {
-            this.showNotification('Please upload a plan first', 'error');
+            this.showNotification('Please upload a floor plan first', 'error');
             return;
         }
 
         this.showProgress(true, 'Optimizing layout...');
 
         try {
-            const config = this.getConfiguration();
+            const boxWidth = parseFloat(document.getElementById('boxWidth').value) || 3.0;
+            const boxHeight = parseFloat(document.getElementById('boxHeight').value) || 4.0;
+            const corridorWidth = parseFloat(document.getElementById('corridorWidth').value) || 1.2;
 
             const response = await fetch('/optimize', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     plan_id: this.currentPlanId,
-                    ...config
+                    box_dimensions: { width: boxWidth, height: boxHeight },
+                    corridor_width: corridorWidth
                 })
             });
 
@@ -216,21 +217,21 @@ class FloorPlanGenieAdvanced {
 
             if (result.success) {
                 this.optimizationResult = result;
-                await this.generateVisual();
-                this.displayResults(result);
+                this.displayOptimizationResult(result);
+                await this.generateVisual(result);
                 this.showNotification('Layout optimized successfully!', 'success');
             } else {
                 this.showNotification(`Optimization failed: ${result.error}`, 'error');
             }
         } catch (error) {
-            this.showNotification(`Error: ${error.message}`, 'error');
+            this.showNotification(`Optimization failed: ${error.message}`, 'error');
         } finally {
             this.showProgress(false);
         }
     }
 
-    async generateVisual() {
-        if (!this.optimizationResult) return;
+    async generateVisual(optimizationResult) {
+        if (!optimizationResult) return;
 
         try {
             const outputFormat = document.getElementById('outputFormat')?.value || '2d';
@@ -241,7 +242,7 @@ class FloorPlanGenieAdvanced {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    ...this.optimizationResult,
+                    ...optimizationResult,
                     format: outputFormat
                 })
             });
@@ -362,6 +363,20 @@ class FloorPlanGenieAdvanced {
                 notification.parentNode.removeChild(notification);
             }
         }, 5000);
+    }
+
+    // Placeholder for the actual display of optimization results
+    displayOptimizationResult(result) {
+        console.log("Displaying optimization results:", result);
+        // In a real scenario, this would update UI elements with calculated metrics,
+        // optimized layout visualizations, etc.
+        // For now, we'll just log it.
+        if (result.statistics) {
+            this.updateStatistic('totalBoxes', result.statistics.total_boxes);
+            this.updateStatistic('totalCorridors', result.statistics.total_corridors);
+            this.updateStatistic('utilizationRate', `${result.statistics.utilization_rate.toFixed(1)}%`);
+            this.updateStatistic('totalArea', `${result.statistics.total_area.toFixed(1)} m²`);
+        }
     }
 }
 
