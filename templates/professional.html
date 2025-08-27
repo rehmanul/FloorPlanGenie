@@ -339,33 +339,40 @@
                     console.log('Upload area clicked');
                     fileInput.click();
                 });
+                
                 uploadArea.addEventListener('dragover', (e) => {
                     e.preventDefault();
                     uploadArea.classList.add('dragging');
                 });
+                
                 uploadArea.addEventListener('dragleave', () => {
                     uploadArea.classList.remove('dragging');
                 });
+                
                 uploadArea.addEventListener('drop', (e) => {
                     e.preventDefault();
                     uploadArea.classList.remove('dragging');
                     const files = e.dataTransfer.files;
                     if (files.length > 0) {
-                        this.uploadFile(files[0]);
+                        professionalUI.uploadFile(files[0]);
                     }
                 });
 
                 fileInput.addEventListener('change', (e) => {
                     console.log('File input changed:', e.target.files);
                     if (e.target.files.length > 0) {
-                        this.uploadFile(e.target.files[0]);
+                        professionalUI.uploadFile(e.target.files[0]);
                     }
                 });
 
-                // Also bind to the upload button
-                const chooseFileBtn = document.querySelector('button[onclick*="file-input"]');
+                // Choose file button
+                const chooseFileBtn = document.getElementById('choose-file-btn');
                 if (chooseFileBtn) {
                     chooseFileBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        fileInput.click();
+                    });
+                }
                         e.preventDefault();
                         fileInput.click();
                     });

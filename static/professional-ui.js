@@ -47,6 +47,200 @@ class ProfessionalUI {
             uploadArea.classList.remove('drag-over');
             const files = e.dataTransfer.files;
             if (files.length > 0) {
+                this.uploadFile(files[0]);
+            }
+        });
+        
+        // Click to upload
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                this.uploadFile(e.target.files[0]);
+            }
+        });
+    }
+    
+    async uploadFile(file) {
+        if (this.isProcessing) return;
+        
+        this.isProcessing = true;
+        this.showProgress('Uploading file...');
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.currentPlanId = result.plan_id;
+                this.showProgress('File uploaded successfully!');
+                this.displayPlanData(result);
+                this.hideProgress();
+            } else {
+                throw new Error(result.error || 'Upload failed');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            this.showError(`Upload failed: ${error.message}`);
+            this.hideProgress();
+        } finally {
+            this.isProcessing = false;
+        }
+    }
+    
+    displayPlanData(planData) {
+        // Update canvas with plan visualization
+        const canvasContainer = document.getElementById('canvasContainer');
+        if (planData.visual_path) {
+            canvasContainer.innerHTML = `
+                <div class="plan-preview">
+                    <img src="${planData.visual_path}" alt="Floor Plan" style="max-width: 100%; height: auto;">
+                    <div class="plan-info">
+                        <p><strong>Dimensions:</strong> ${planData.dimensions.width?.toFixed(2) || 'N/A'}m × ${planData.dimensions.height?.toFixed(2) || 'N/A'}m</p>
+                        <p><strong>Walls:</strong> ${planData.walls?.length || 0} detected</p>
+                        <p><strong>File Type:</strong> ${planData.file_type?.toUpperCase()}</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Enable optimization button
+        const optimizeBtn = document.getElementById('optimizeBtn');
+        if (optimizeBtn) {
+            optimizeBtn.disabled = false;
+            optimizeBtn.textContent = '🚀 Optimize Placement';
+        }
+    }
+    
+    async runOptimization() {
+        if (!this.currentPlanId || this.isProcessing) return;
+        
+        this.isProcessing = true;
+        this.showProgress('Optimizing layout...');
+        
+        const formData = {
+            plan_id: this.currentPlanId,
+            layout_profile: document.getElementById('layoutProfile')?.value || '25%',
+            box_width: parseFloat(document.getElementById('boxWidth')?.value || 3.0),
+            box_height: parseFloat(document.getElementById('boxHeight')?.value || 4.0),
+            corridor_width: parseFloat(document.getElementById('corridorWidth')?.value || 1.2)
+        };
+        
+        try {
+            const response = await fetch('/optimize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.currentOptimization = result;
+                this.updateStatistics(result.statistics);
+                this.showProgress('Optimization completed!');
+                this.generateVisual();
+            } else {
+                throw new Error(result.error || 'Optimization failed');
+            }
+        } catch (error) {
+            console.error('Optimization error:', error);
+            this.showError(`Optimization failed: ${error.message}`);
+        } finally {
+            this.isProcessing = false;
+            this.hideProgress();
+        }
+    }
+    
+    async generateVisual() {
+        if (!this.currentOptimization) return;
+        
+        try {
+            const response = await fetch('/generate_visual', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...this.currentOptimization,
+                    format: '2d'
+                })
+            });
+            
+            if (response.ok) {
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                
+                const canvasContainer = document.getElementById('canvasContainer');
+                canvasContainer.innerHTML = `
+                    <div class="optimization-result">
+                        <img src="${url}" alt="Optimized Floor Plan" style="max-width: 100%; height: auto;">
+                    </div>
+                `;
+            }
+        } catch (error) {
+            console.error('Visual generation error:', error);
+        }
+    }
+    
+    updateStatistics(stats) {
+        if (!stats) return;
+        
+        const elements = {
+            'totalBoxes': stats.total_boxes || 0,
+            'utilizationRate': `${(stats.utilization_rate || 0).toFixed(1)}%`,
+            'totalCorridors': stats.total_corridors || 0,
+            'efficiencyScore': (stats.efficiency_score || 0).toFixed(0)
+        };
+        
+        Object.entries(elements).forEach(([id, value]) => {
+            const element = document.getElementById(id);
+            if (element) element.textContent = value;
+        });
+    }
+    
+    showProgress(message) {
+        const canvasContainer = document.getElementById('canvasContainer');
+        const loadingDiv = document.getElementById('canvasLoading');
+        
+        if (loadingDiv) {
+            loadingDiv.style.display = 'flex';
+            const messageP = loadingDiv.querySelector('p');
+            if (messageP) messageP.textContent = message;
+        }
+    }
+    
+    hideProgress() {
+        const loadingDiv = document.getElementById('canvasLoading');
+        if (loadingDiv) {
+            loadingDiv.style.display = 'none';
+        }
+    }
+    
+    showError(message) {
+        const canvasContainer = document.getElementById('canvasContainer');
+        canvasContainer.innerHTML = `
+            <div class="error-message" style="text-align: center; padding: 2rem; color: #ef4444;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                <h3>Error</h3>
+                <p>${message}</p>
+                <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Try Again
+                </button>
+            </div>
+        `;
+    }
+    
+    onParameterChange() {
+        // Auto-optimize if plan is loaded
                 this.handleFileUpload(files[0]);
             }
         });
