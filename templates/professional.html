@@ -52,9 +52,14 @@
                             <span class="supported-text">✅ Professional CAD files supported</span>
                         </div>
                     </div>
-                    <input type="file" class="file-input" id="file-input" 
-                           accept=".dxf,.dwg,.pdf,.jpg,.jpeg,.png" />
                 </div>
+
+                <!-- Direct file input for testing -->
+                <input type="file" id="file-input" 
+                       accept=".dxf,.dwg,.pdf,.jpg,.jpeg,.png"
+                       style="width: 100%; padding: 0.75rem; margin-top: 0.5rem; 
+                              border: 2px solid #3b82f6; border-radius: 8px;
+                              background: white; cursor: pointer;" />
 
                 <button class="btn btn-primary" id="choose-file-btn"
                         style="width: 100%; margin-top: 0.5rem; font-size: 1rem; padding: 0.75rem;">
@@ -378,9 +383,19 @@
                     chooseFileBtn.addEventListener('click', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        console.log('Choose file button clicked');
                         fileInput.click();
                     });
                 }
+
+                // Add direct click handler to file input
+                document.addEventListener('click', (e) => {
+                    if (e.target.closest('#upload-area') || e.target.closest('#choose-file-btn')) {
+                        e.preventDefault();
+                        console.log('Triggering file input click');
+                        fileInput.click();
+                    }
+                });
                 
                 // Optimization
                 document.getElementById('optimize-btn').addEventListener('click', () => {
