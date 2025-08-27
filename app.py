@@ -154,5 +154,110 @@ def generate_visual():
         print(f"Visual generation error: {e}")
         return jsonify({'error': str(e)}), 500
 
+# Production-grade route for modern interface
+@app.route('/professional')
+def professional_interface():
+    """Serve the production-grade professional interface"""
+    try:
+        from modern_ui_controller import ModernUIController
+        
+        ui_controller = ModernUIController()
+        default_data = {
+            'dimensions': {'width': 50, 'height': 40},
+            'statistics': {
+                'total_boxes': 0,
+                'utilization_rate': 0,
+                'total_corridors': 0,
+                'efficiency_score': 0
+            }
+        }
+        
+        html_content = ui_controller.generate_modern_interface_html(default_data)
+        return html_content
+        
+    except ImportError:
+        return '''<!DOCTYPE html>
+<html><head><title>Professional Mode Loading...</title></head>
+<body style="font-family: Arial; text-align: center; padding: 50px;">
+<h2>🚀 Production-Grade Interface</h2>
+<p>Advanced components loading... Please refresh in a moment.</p>
+<a href="/" style="color: #3b82f6;">← Back to Standard Interface</a>
+</body></html>'''
+
+@app.route('/advanced_optimize', methods=['POST'])
+def advanced_optimize():
+    """Advanced optimization with production-grade algorithms"""
+    try:
+        from intelligent_placement_engine import IntelligentPlacementEngine
+        
+        data = request.json
+        plan_id = data.get('plan_id')
+        layout_profile = data.get('layout_profile', '25%')
+        
+        box_dimensions = {
+            'width': float(data.get('box_width', 3.0)),
+            'height': float(data.get('box_height', 4.0))
+        }
+        corridor_width = float(data.get('corridor_width', 1.2))
+        
+        # Get plan data
+        plan_data = plan_processor.get_plan_data(plan_id)
+        if not plan_data:
+            return jsonify({'error': 'Plan not found'}), 404
+        
+        # Use production-grade optimization
+        placement_engine = IntelligentPlacementEngine()
+        optimization_result = placement_engine.optimize_placement(
+            plan_data, box_dimensions, corridor_width, layout_profile
+        )
+        
+        result_data = {
+            'success': True,
+            'boxes': optimization_result['boxes'],
+            'corridors': optimization_result['corridors'],
+            'statistics': optimization_result['statistics'],
+            'dimensions': plan_data['dimensions'],
+            'walls': plan_data['walls'],
+            'layout_profile': layout_profile,
+            'optimization_metadata': optimization_result['optimization_metadata']
+        }
+        
+        return jsonify(result_data)
+        
+    except ImportError:
+        # Fallback to standard optimization
+        return optimize_layout()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/interactive_visual', methods=['POST'])
+def generate_interactive_visual():
+    """Generate interactive SVG visualization"""
+    try:
+        from interactive_canvas import InteractiveCanvasRenderer
+        
+        data = request.json
+        if not data or 'boxes' not in data:
+            return jsonify({'error': 'No optimization data provided'}), 400
+        
+        canvas_renderer = InteractiveCanvasRenderer()
+        interactive_result = canvas_renderer.generate_interactive_svg(data)
+        
+        return jsonify({
+            'success': True,
+            'svg_path': interactive_result['svg_path'],
+            'html_path': interactive_result['html_path'],
+            'interactive_url': interactive_result['interactive_url']
+        })
+        
+    except ImportError:
+        # Fallback to standard visual generation
+        return generate_visual()
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
+    print("🏗️  FloorPlanGenie Server Starting...")
+    print("📊 Standard Interface: http://localhost:5000/")
+    print("🚀 Professional Interface: http://localhost:5000/professional")
     app.run(host='0.0.0.0', port=5000, debug=True)
