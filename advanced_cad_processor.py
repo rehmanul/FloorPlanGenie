@@ -17,6 +17,10 @@ from shapely.geometry import LineString, Polygon, Point
 from shapely.ops import unary_union
 import networkx as nx
 from collections import defaultdict
+import io # Import io for BytesIO
+
+# Ensure logging is configured if not already done elsewhere
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class AdvancedCADProcessor:
     """Production-grade CAD file processor with layer-aware extraction and element classification"""
@@ -98,7 +102,7 @@ class AdvancedCADProcessor:
             msp = doc.modelspace()
             min_x, min_y = float('inf'), float('inf')
             max_x, max_y = float('-inf'), float('-inf')
-            
+
             # Store all elements from all layers for later processing
             all_elements = []
 
@@ -144,7 +148,7 @@ class AdvancedCADProcessor:
 
             # Classify and organize elements based on layer classification
             self._classify_elements(plan_data)
-            
+
             # Assign original code's processing methods if needed, or integrate their logic
             # For now, we rely on the new _classify_elements and _extract_entity_data
 
@@ -321,7 +325,7 @@ class AdvancedCADProcessor:
             # Process vector paths
             for path in paths:
                 self._process_pdf_path(path, plan_data)
-            
+
             # Process images if any (e.g., scanned plans) - basic handling
             images = page.get_images(full=True)
             for img_index, img_info in enumerate(images):
@@ -411,7 +415,7 @@ class AdvancedCADProcessor:
         # Process geometric items within the path
         for item in items:
             item_type = item[0]
-            
+
             if item_type == 'l':  # Line to
                 # item[1] is (x1, y1), item[2] is (x2, y2)
                 line_data = {
@@ -433,7 +437,7 @@ class AdvancedCADProcessor:
                         'zone_type': 'entrance',
                         'render_style': self.color_mapping.get('entrances_exits', {})
                     })
-            
+
             elif item_type == 'm': # Move to (start of a new subpath)
                 pass # Ignore move to commands for now
             elif item_type == 'c': # Curve to (Bézier curve)
@@ -462,7 +466,7 @@ class AdvancedCADProcessor:
         try:
             img = Image.open(filepath).convert('RGB')
             width, height = img.size
-            
+
             plan_data = {
                 'id': plan_id,
                 'filename': os.path.basename(filepath),
@@ -488,9 +492,9 @@ class AdvancedCADProcessor:
                 # Approximate contour to simplify shapes
                 perimeter = cv2.arcLength(contour, True)
                 approx = cv2.approxPolyDP(contour, 0.02 * perimeter, True)
-                
+
                 x, y, w, h = cv2.boundingRect(contour)
-                
+
                 # Classify based on shape properties (e.g., aspect ratio, area) - very basic
                 if len(approx) == 4: # Potential rectangles/walls
                     # Check aspect ratio and size to guess if it's a wall segment or room boundary
@@ -503,7 +507,7 @@ class AdvancedCADProcessor:
                              'render_style': self.color_mapping['walls']
                          })
                     # More sophisticated logic needed here for complex shapes and OCR for text
-                
+
             # Placeholder for OCR if text detection is needed
             # Example: using pytesseract if installed
             # try:
@@ -537,31 +541,31 @@ class AdvancedCADProcessor:
     def _identify_main_floor_plan(self, doc):
         """Identify the main floor plan among multiple layouts (from original code)"""
         layouts = [doc.modelspace()]
-        
+
         for layout_name in doc.layout_names():
             if layout_name.lower() != 'model':
                 try:
                     layouts.append(doc.layouts.get(layout_name))
                 except:
                     continue
-        
+
         best_layout = None
         best_score = 0
-        
+
         for layout in layouts:
             score = self._score_layout_for_floor_plan(layout)
             if score > best_score:
                 best_score = score
                 best_layout = layout
-        
+
         return best_layout or doc.modelspace()
-    
+
     def _score_layout_for_floor_plan(self, layout):
         """Score layout based on typical floor plan characteristics (from original code)"""
         score = 0
         line_count = 0
         total_length = 0
-        
+
         for entity in layout:
             if entity.dxftype() in ['LINE', 'POLYLINE', 'LWPOLYLINE']:
                 line_count += 1
@@ -569,17 +573,17 @@ class AdvancedCADProcessor:
                     layer = getattr(entity.dxf, 'layer', '').lower()
                     if any(wall_keyword in layer for wall_keyword in self.layer_mapping['walls']):
                         score += 10
-                
+
                 if entity.dxftype() == 'LINE':
                     start, end = entity.dxf.start, entity.dxf.end
                     length = math.sqrt((end.x - start.x)**2 + (end.y - start.y)**2)
                     total_length += length
-        
+
         score += min(line_count * 2, 100)
         score += min(total_length / 1000, 50)
-        
+
         return score
-    
+
     def _extract_architectural_elements(self, layout):
         """Extract and classify architectural elements by layer (from original code)"""
         elements = {
@@ -589,65 +593,65 @@ class AdvancedCADProcessor:
             'annotations': [],
             'layers': defaultdict(list)
         }
-        
-        bounds = {'min_x': float('inf'), 'min_y': float('inf'), 
+
+        bounds = {'min_x': float('inf'), 'min_y': float('inf'),
                   'max_x': float('-inf'), 'max_y': float('-inf')}
-        
+
         for entity in layout:
             layer_name = getattr(entity.dxf, 'layer', 'Default').lower()
             element_type = self._classify_element_by_layer(layer_name)
-            
+
             if entity.dxftype() == 'LINE':
                 element = self._process_line_entity(entity, element_type, bounds)
                 elements[element_type].append(element)
                 elements['layers'][layer_name].append(element)
-                
+
             elif entity.dxftype() in ['POLYLINE', 'LWPOLYLINE']:
                 polyline_elements = self._process_polyline_entity(entity, element_type, bounds)
                 elements[element_type].extend(polyline_elements)
                 elements['layers'][layer_name].extend(polyline_elements)
-            
+
             elif entity.dxftype() == 'CIRCLE':
                 element = self._process_circle_entity(entity, bounds)
                 if element:
                     elements['doors'].append(element)
                     elements['layers'][layer_name].append(element)
-            
+
             elif entity.dxftype() == 'ARC':
                 element = self._process_arc_entity(entity, bounds)
                 if element:
                     elements['doors'].append(element)
                     elements['layers'][layer_name].append(element)
-        
+
         elements['bounds'] = bounds
         return elements
-    
+
     def _classify_element_by_layer(self, layer_name):
         """Classify architectural elements based on layer names (from original code)"""
         layer_lower = layer_name.lower()
-        
+
         for element_type, keywords in self.layer_mapping.items():
             if any(keyword in layer_lower for keyword in keywords):
                 return element_type if element_type in ['walls', 'doors', 'windows'] else 'walls'
-        
+
         if any(term in layer_lower for term in ['door', 'porte', 'opening']):
             return 'doors'
         elif any(term in layer_lower for term in ['window', 'fenetre']):
             return 'windows'
         else:
             return 'walls'
-    
+
     def _process_line_entity(self, entity, element_type, bounds):
         """Process LINE entities (from original code)"""
         start, end = entity.dxf.start, entity.dxf.end
-        
+
         bounds['min_x'] = min(bounds['min_x'], start.x, end.x)
         bounds['max_x'] = max(bounds['max_x'], start.x, end.x)
         bounds['min_y'] = min(bounds['min_y'], start.y, end.y)
         bounds['max_y'] = max(bounds['max_y'], start.y, end.y)
-        
+
         length = math.sqrt((end.x - start.x)**2 + (end.y - start.y)**2)
-        
+
         return {
             'start': {'x': float(start.x), 'y': float(start.y)},
             'end': {'x': float(end.x), 'y': float(end.y)},
@@ -656,7 +660,7 @@ class AdvancedCADProcessor:
             'type': 'line',
             'element_type': element_type
         }
-    
+
     def _process_polyline_entity(self, entity, element_type, bounds):
         """Process POLYLINE/LWPOLYLINE entities (from original code)"""
         elements = []
@@ -664,12 +668,12 @@ class AdvancedCADProcessor:
             points = list(entity.get_points())
             for i in range(len(points) - 1):
                 start, end = points[i], points[i + 1]
-                
+
                 bounds['min_x'] = min(bounds['min_x'], start[0], end[0])
                 bounds['max_x'] = max(bounds['max_x'], start[0], end[0])
                 bounds['min_y'] = min(bounds['min_y'], start[1], end[1])
                 bounds['max_y'] = max(bounds['max_y'], start[1], end[1])
-                
+
                 element = {
                     'start': {'x': float(start[0]), 'y': float(start[1])},
                     'end': {'x': float(end[0]), 'y': float(end[1])},
@@ -680,20 +684,20 @@ class AdvancedCADProcessor:
                 elements.append(element)
         except:
             pass
-        
+
         return elements
-    
+
     def _process_circle_entity(self, entity, bounds):
         """Process CIRCLE entities (often doors) (from original code)"""
         center = entity.dxf.center
         radius = entity.dxf.radius
-        
+
         if 0.3 < radius < 3.0:
             bounds['min_x'] = min(bounds['min_x'], center.x - radius)
             bounds['max_x'] = max(bounds['max_x'], center.x + radius)
             bounds['min_y'] = min(bounds['min_y'], center.y - radius)
             bounds['max_y'] = max(bounds['max_y'], center.y + radius)
-            
+
             return {
                 'center': {'x': float(center.x), 'y': float(center.y)},
                 'radius': float(radius),
@@ -701,7 +705,7 @@ class AdvancedCADProcessor:
                 'element_type': 'door'
             }
         return None
-    
+
     def _process_arc_entity(self, entity, bounds):
         """Process ARC entities (door swings) (from original code)"""
         try:
@@ -709,13 +713,13 @@ class AdvancedCADProcessor:
             radius = entity.dxf.radius
             start_angle = entity.dxf.start_angle
             end_angle = entity.dxf.end_angle
-            
+
             if 0.5 < radius < 2.5:
                 bounds['min_x'] = min(bounds['min_x'], center.x - radius)
                 bounds['max_x'] = max(bounds['max_x'], center.x + radius)
                 bounds['min_y'] = min(bounds['min_y'], center.y - radius)
                 bounds['max_y'] = max(bounds['max_y'], center.y + radius)
-                
+
                 return {
                     'center': {'x': float(center.x), 'y': float(center.y)},
                     'radius': float(radius),
@@ -727,11 +731,11 @@ class AdvancedCADProcessor:
         except:
             pass
         return None
-    
+
     def _analyze_geometry(self, elements):
         """Perform geometric analysis of architectural elements (from original code)"""
         bounds = elements['bounds']
-        
+
         wall_lines = []
         for wall in elements['walls']:
             line = LineString([
@@ -739,10 +743,10 @@ class AdvancedCADProcessor:
                 (wall['end']['x'], wall['end']['y'])
             ])
             wall_lines.append(line)
-        
+
         outline = self._create_building_outline(wall_lines, bounds)
         interior_spaces = self._identify_interior_spaces(wall_lines, outline)
-        
+
         return {
             'bounds': bounds,
             'wall_lines': wall_lines,
@@ -750,13 +754,13 @@ class AdvancedCADProcessor:
             'interior_spaces': interior_spaces,
             'total_area': self._calculate_area(outline)
         }
-    
+
     def _create_building_outline(self, wall_lines, bounds):
         """Create building outline from wall network (from original code)"""
         try:
             buffered_walls = [line.buffer(0.1) for line in wall_lines]
             union_walls = unary_union(buffered_walls)
-            
+
             if hasattr(union_walls, 'exterior'):
                 return union_walls.exterior
             else:
@@ -773,18 +777,18 @@ class AdvancedCADProcessor:
                 (bounds['max_x'], bounds['max_y']),
                 (bounds['min_x'], bounds['max_y'])
             ])
-    
+
     def _identify_interior_spaces(self, wall_lines, outline):
         """Identify interior spaces using wall network analysis (from original code)"""
         spaces = []
-        
+
         try:
             bounds = outline.bounds
             grid_resolution = min((bounds[2] - bounds[0]), (bounds[3] - bounds[1])) / 20
-            
+
             x_coords = np.arange(bounds[0], bounds[2], grid_resolution)
             y_coords = np.arange(bounds[1], bounds[3], grid_resolution)
-            
+
             for x in x_coords:
                 for y in y_coords:
                     point = Point(x, y)
@@ -794,9 +798,9 @@ class AdvancedCADProcessor:
                             spaces.append({'center': (x, y), 'type': 'available'})
         except:
             pass
-        
+
         return spaces
-    
+
     def _generate_intelligent_zones(self, elements, geometry):
         """Generate zones using architectural intelligence (from original code)"""
         zones = {
@@ -805,14 +809,14 @@ class AdvancedCADProcessor:
             'available': [],
             'restricted': []
         }
-        
+
         bounds = geometry['bounds']
-        
+
         for door in elements['doors']:
             if door['type'] in ['circle', 'arc']:
                 center = door['center']
                 radius = door.get('radius', 1.0)
-                
+
                 zone = {
                     'x': center['x'] - radius * 1.5,
                     'y': center['y'] - radius * 1.5,
@@ -821,34 +825,34 @@ class AdvancedCADProcessor:
                     'type': 'entry_exit'
                 }
                 zones['entry_exit'].append(zone)
-        
+
         margin = min(bounds['max_x'] - bounds['min_x'], bounds['max_y'] - bounds['min_y']) * 0.1
-        
+
         perimeter_zones = [
             {'x': bounds['min_x'], 'y': bounds['min_y'], 'width': margin, 'height': margin},
             {'x': bounds['max_x'] - margin, 'y': bounds['max_y'] - margin, 'width': margin, 'height': margin}
         ]
-        
+
         for zone in perimeter_zones:
             zone['type'] = 'no_entry'
             zones['no_entry'].append(zone)
-        
+
         return zones
-    
+
     def _calculate_precise_dimensions(self, geometry):
         """Calculate precise building dimensions (from original code)"""
         bounds = geometry['bounds']
-        
+
         width = bounds['max_x'] - bounds['min_x']
         height = bounds['max_y'] - bounds['min_y']
-        
+
         normalized_bounds = {
             'min_x': 0,
             'min_y': 0,
             'max_x': width,
             'max_y': height
         }
-        
+
         return {
             'width': float(width),
             'height': float(height),
@@ -856,19 +860,19 @@ class AdvancedCADProcessor:
             'bounds': normalized_bounds,
             'units': 'meters'
         }
-    
+
     def _calculate_area(self, polygon):
         """Calculate area of a polygon (from original code)"""
         try:
             return polygon.area
         except:
             return 0.0
-    
+
     def normalize_coordinates(self, elements, bounds):
         """Normalize coordinates to start from origin (from original code)"""
         offset_x = bounds['min_x']
         offset_y = bounds['min_y']
-        
+
         normalized_elements = []
         for element in elements:
             if 'start' in element and 'end' in element:
@@ -882,22 +886,5 @@ class AdvancedCADProcessor:
                     'y': element['end']['y'] - offset_y
                 }
                 normalized_elements.append(normalized)
-        
+
         return normalized_elements
-```import io # Import io for BytesIO
-
-# Add necessary imports that were missing in the original snippet and used in the edited snippet
-# For example, if _process_image_file uses PIL or OpenCV, ensure they are imported.
-# We need io for BytesIO in _process_image_file
-
-# Ensure logging is configured if not already done elsewhere
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
-```import io # Import io for BytesIO
-
-# Add necessary imports that were missing in the original snippet and used in the edited snippet
-# For example, if _process_image_file uses PIL or OpenCV, ensure they are imported.
-# We need io for BytesIO in _process_image_file
-
-# Ensure logging is configured if not already done elsewhere
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
