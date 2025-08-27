@@ -1,3 +1,4 @@
+
 class FloorPlanGenieAdvanced {
     constructor() {
         this.currentPlanId = null;
@@ -25,7 +26,10 @@ class FloorPlanGenieAdvanced {
 
         // Configuration changes
         ['boxWidth', 'boxHeight', 'corridorWidth'].forEach(id => {
-            document.getElementById(id).addEventListener('change', () => this.updateConfiguration());
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('change', () => this.updateConfiguration());
+            }
         });
     }
 
@@ -52,11 +56,12 @@ class FloorPlanGenieAdvanced {
         });
     }
 
-    handleFileSelect(event) {
+    async handleFileSelect(event) {
         const files = event.target.files;
         if (files.length === 0) return;
 
         this.showProgress(true, 'Uploading and processing...');
+        this.updateUploadStatus('Uploading file...');
 
         const formData = new FormData();
         formData.append('file', files[0]);
@@ -74,13 +79,24 @@ class FloorPlanGenieAdvanced {
                 this.updateUploadStatus('✅ File processed successfully!');
                 this.displayPlanInfo(result);
                 this.displayProcessedPlan(result);
+                document.getElementById('optimizeBtn').disabled = false;
+                this.showNotification('Plan uploaded successfully!', 'success');
             } else {
                 this.updateUploadStatus('❌ Error: ' + result.error);
+                this.showNotification(`Error: ${result.error}`, 'error');
             }
         } catch (error) {
             this.updateUploadStatus('❌ Upload failed: ' + error.message);
+            this.showNotification(`Upload failed: ${error.message}`, 'error');
         } finally {
             this.showProgress(false);
+        }
+    }
+
+    updateUploadStatus(message) {
+        const statusElement = document.querySelector('.upload-text p');
+        if (statusElement) {
+            statusElement.textContent = message;
         }
     }
 
@@ -89,8 +105,10 @@ class FloorPlanGenieAdvanced {
         if (result.visual_path) {
             // Show in results section
             const resultImage = document.getElementById('resultImage');
-            resultImage.src = result.visual_path + '?t=' + Date.now(); // Cache busting
-            resultImage.style.display = 'block';
+            if (resultImage) {
+                resultImage.src = result.visual_path + '?t=' + Date.now(); // Cache busting
+                resultImage.style.display = 'block';
+            }
 
             // Show in processed plan section
             const processedSection = document.getElementById('processedPlanSection');
@@ -100,25 +118,36 @@ class FloorPlanGenieAdvanced {
                 processedSection.style.display = 'block';
 
                 // Update plan info
-                document.getElementById('planDimensions').textContent = `${result.dimensions.width}m × ${result.dimensions.height}m`;
-                document.getElementById('wallsCount').textContent = result.walls ? result.walls.length : '0';
-                document.getElementById('zonesCount').textContent = result.zones ? 
+                const planDimensions = document.getElementById('planDimensions');
+                const wallsCount = document.getElementById('wallsCount');
+                const zonesCount = document.getElementById('zonesCount');
+
+                if (planDimensions) planDimensions.textContent = `${result.dimensions.width}m × ${result.dimensions.height}m`;
+                if (wallsCount) wallsCount.textContent = result.walls ? result.walls.length : '0';
+                if (zonesCount) zonesCount.textContent = result.zones ? 
                     (result.zones.no_entry?.length || 0) + (result.zones.entry_exit?.length || 0) : '0';
             }
 
             // Update statistics with initial plan info
-            document.getElementById('totalBoxes').textContent = '0';
-            document.getElementById('totalCorridors').textContent = '0';
-            document.getElementById('utilizationRate').textContent = '0%';
-            document.getElementById('totalArea').textContent = `${(result.dimensions.width * result.dimensions.height).toFixed(1)} m²`;
+            this.updateStatistic('totalBoxes', '0');
+            this.updateStatistic('totalCorridors', '0');
+            this.updateStatistic('utilizationRate', '0%');
+            this.updateStatistic('totalArea', `${(result.dimensions.width * result.dimensions.height).toFixed(1)} m²`);
         }
     }
 
-    handleFiles(files) {
+    updateStatistic(id, value) {
+        const element = document.getElementById(id);
+        if (element) {
+            element.textContent = value;
+        }
+    }
+
+    async handleFiles(files) {
         if (files.length === 0) return;
 
         const file = files[0];
-        this.showProgress(true);
+        this.showProgress(true, 'Processing file...');
 
         try {
             const formData = new FormData();
@@ -134,6 +163,7 @@ class FloorPlanGenieAdvanced {
             if (result.success) {
                 this.currentPlanId = result.plan_id;
                 this.displayPlanInfo(result);
+                this.displayProcessedPlan(result);
                 document.getElementById('optimizeBtn').disabled = false;
                 this.showNotification('Plan uploaded successfully!', 'success');
             } else {
@@ -149,7 +179,6 @@ class FloorPlanGenieAdvanced {
     displayPlanInfo(planData) {
         // Display basic plan information
         console.log('Plan data:', planData);
-
         // Could add a preview section here showing detected walls, zones, etc.
     }
 
@@ -196,7 +225,7 @@ class FloorPlanGenieAdvanced {
         if (!this.optimizationResult) return;
 
         try {
-            const outputFormat = document.getElementById('outputFormat').value;
+            const outputFormat = document.getElementById('outputFormat')?.value || '2d';
 
             const response = await fetch('/generate_visual', {
                 method: 'POST',
@@ -214,8 +243,10 @@ class FloorPlanGenieAdvanced {
                 const imageUrl = URL.createObjectURL(blob);
 
                 const resultImage = document.getElementById('resultImage');
-                resultImage.src = imageUrl;
-                resultImage.style.display = 'block';
+                if (resultImage) {
+                    resultImage.src = imageUrl;
+                    resultImage.style.display = 'block';
+                }
             }
         } catch (error) {
             console.error('Visual generation failed:', error);
@@ -224,23 +255,26 @@ class FloorPlanGenieAdvanced {
 
     displayResults(result) {
         // Update statistics
-        document.getElementById('totalBoxes').textContent = result.statistics.total_boxes;
-        document.getElementById('totalCorridors').textContent = result.statistics.total_corridors;
-        document.getElementById('utilizationRate').textContent = `${result.statistics.utilization_rate.toFixed(1)}%`;
-        document.getElementById('totalArea').textContent = `${result.statistics.total_area.toFixed(1)} m²`;
+        this.updateStatistic('totalBoxes', result.statistics.total_boxes);
+        this.updateStatistic('totalCorridors', result.statistics.total_corridors);
+        this.updateStatistic('utilizationRate', `${result.statistics.utilization_rate.toFixed(1)}%`);
+        this.updateStatistic('totalArea', `${result.statistics.total_area.toFixed(1)} m²`);
 
         // Show results section
-        document.getElementById('resultsSection').style.display = 'block';
-        document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        const resultsSection = document.getElementById('resultsSection');
+        if (resultsSection) {
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
     }
 
     getConfiguration() {
         return {
             box_dimensions: {
-                width: parseFloat(document.getElementById('boxWidth').value),
-                height: parseFloat(document.getElementById('boxHeight').value)
+                width: parseFloat(document.getElementById('boxWidth')?.value || '3.0'),
+                height: parseFloat(document.getElementById('boxHeight')?.value || '4.0')
             },
-            corridor_width: parseFloat(document.getElementById('corridorWidth').value)
+            corridor_width: parseFloat(document.getElementById('corridorWidth')?.value || '1.2')
         };
     }
 
@@ -259,7 +293,7 @@ class FloorPlanGenieAdvanced {
 
         // Download the current visual result
         const resultImage = document.getElementById('resultImage');
-        if (resultImage.src) {
+        if (resultImage && resultImage.src) {
             const link = document.createElement('a');
             link.href = resultImage.src;
             link.download = `floorplan-optimized-${new Date().toISOString().split('T')[0]}.png`;
@@ -269,11 +303,16 @@ class FloorPlanGenieAdvanced {
 
     showProgress(show, message = 'Processing...') {
         const progressBar = document.getElementById('uploadProgress');
-        if (show) {
-            progressBar.style.display = 'block';
-            progressBar.querySelector('.progress-fill').style.width = '100%';
-        } else {
-            progressBar.style.display = 'none';
+        if (progressBar) {
+            if (show) {
+                progressBar.style.display = 'block';
+                const progressFill = progressBar.querySelector('.progress-fill');
+                if (progressFill) {
+                    progressFill.style.width = '100%';
+                }
+            } else {
+                progressBar.style.display = 'none';
+            }
         }
     }
 
@@ -282,6 +321,30 @@ class FloorPlanGenieAdvanced {
         const notification = document.createElement('div');
         notification.className = `notification ${type}`;
         notification.textContent = message;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        `;
+
+        // Set color based on type
+        switch(type) {
+            case 'success':
+                notification.style.backgroundColor = '#28a745';
+                break;
+            case 'error':
+                notification.style.backgroundColor = '#dc3545';
+                break;
+            default:
+                notification.style.backgroundColor = '#007bff';
+        }
 
         document.body.appendChild(notification);
 
