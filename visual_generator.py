@@ -17,12 +17,15 @@ class VisualGenerator:
         fig, ax = plt.subplots(1, 1, figsize=(16, 12), facecolor='white')
         ax.set_facecolor('#f8f9fa')
 
-        # Get dimensions
-        if 'dimensions' in data:
-            width = data['dimensions']['width']
-            height = data['dimensions']['height']
-        else:
-            width, height = 20, 15  # Default
+        # Get dimensions - no defaults, must be real data
+        if 'dimensions' not in data:
+            raise ValueError("No dimensional data provided - cannot generate visualization")
+        
+        width = data['dimensions']['width']
+        height = data['dimensions']['height']
+        
+        if width <= 0 or height <= 0:
+            raise ValueError("Invalid dimensions detected - must be positive real values")
 
         # Draw walls with professional styling
         if 'walls' in data:

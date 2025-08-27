@@ -130,7 +130,7 @@ class PlanProcessor:
             
             # Calculate dimensions with proper scaling
             if max_x == float('-inf'):
-                width, height = 20, 15  # Fallback
+                raise ValueError("No valid geometric data found in CAD file. Please ensure the file contains actual architectural drawings.")
             else:
                 width = float(max_x - min_x)
                 height = float(max_y - min_y)
@@ -253,14 +253,8 @@ class PlanProcessor:
         ]
 
     def _create_basic_plan(self, filepath, plan_id):
-        """Fallback method for basic plan creation"""
-        return {
-            'id': plan_id,
-            'filepath': filepath,
-            'dimensions': {'width': 20, 'height': 15},
-            'walls': self._create_boundary_walls(20, 15),
-            'zones': {'entry_exit': [], 'no_entry': [], 'walls': []}
-        }
+        """Only called when file processing completely fails - no fake data"""
+        raise ValueError(f"Unable to process architectural file: {filepath}. Please ensure you're uploading a valid DWG, DXF, PDF, or image file with actual floor plan data.")
 
     def get_plan_data(self, plan_id):
         return self.plans.get(plan_id)

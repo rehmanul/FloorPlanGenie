@@ -365,12 +365,9 @@ class FloorPlanGenieAdvanced {
         }, 5000);
     }
 
-    // Placeholder for the actual display of optimization results
+    // Display real optimization results from architectural data
     displayOptimizationResult(result) {
         console.log("Displaying optimization results:", result);
-        // In a real scenario, this would update UI elements with calculated metrics,
-        // optimized layout visualizations, etc.
-        // For now, we'll just log it.
         if (result.statistics) {
             this.updateStatistic('totalBoxes', result.statistics.total_boxes);
             this.updateStatistic('totalCorridors', result.statistics.total_corridors);

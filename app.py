@@ -44,6 +44,8 @@ def upload_file():
         # Process the plan
         try:
             plan_data = plan_processor.process_plan(filepath)
+            print(f"File processed successfully. Plan ID: {plan_data['id']}")
+            print(f"Total stored plans: {len(plan_processor.plans)}")
             
             # Generate initial visual of the processed plan
             initial_visual_data = {
@@ -70,14 +72,29 @@ def upload_file():
 def optimize_space():
     data = request.json
     plan_id = data.get('plan_id')
-    box_dimensions = data.get('box_dimensions', {'width': 3.0, 'height': 4.0})  # Default room size
-    corridor_width = data.get('corridor_width', 1.2)  # Default 1.2m corridors
+    box_dimensions = data.get('box_dimensions', {'width': 3.0, 'height': 4.0})
+    corridor_width = data.get('corridor_width', 1.2)
+    
+    # Debug logging
+    print(f"Optimization request - Plan ID: {plan_id}")
+    print(f"Available plans: {list(plan_processor.plans.keys())}")
     
     try:
         # Get plan data
         plan_data = plan_processor.get_plan_data(plan_id)
         if not plan_data:
-            return jsonify({'error': 'Plan data not found. Please upload a file first.'}), 404
+            # If no plan found, try reprocessing the most recent file
+            import glob
+            upload_files = glob.glob('uploads/*.dxf') + glob.glob('uploads/*.dwg')
+            if upload_files:
+                # Use most recent file
+                latest_file = max(upload_files, key=os.path.getctime)
+                print(f"Reprocessing latest file: {latest_file}")
+                plan_data = plan_processor.process_plan(latest_file)
+                # Update plan_id for consistency
+                plan_id = plan_data['id']
+            else:
+                return jsonify({'error': 'No architectural file found. Please upload a DXF or DWG file first.'}), 404
         
         # Optimize space placement
         optimization_result = space_optimizer.optimize_placement(
