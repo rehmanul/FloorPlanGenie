@@ -357,17 +357,18 @@
 
                 uploadArea.addEventListener('drop', (e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     uploadArea.classList.remove('dragging');
                     const files = e.dataTransfer.files;
                     if (files.length > 0) {
-                        professionalUI.uploadFile(files[0]);
+                        this.uploadFile(files[0]);
                     }
                 });
 
                 fileInput.addEventListener('change', (e) => {
                     console.log('File input changed:', e.target.files);
                     if (e.target.files.length > 0) {
-                        professionalUI.uploadFile(e.target.files[0]);
+                        this.uploadFile(e.target.files[0]);
                     }
                 });
 
@@ -376,6 +377,7 @@
                 if (chooseFileBtn) {
                     chooseFileBtn.addEventListener('click', (e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         fileInput.click();
                     });
                 }
@@ -446,7 +448,7 @@
 
                         // Auto-adjust box dimensions based on space size
                         const maxDim = Math.max(result.dimensions.width, result.dimensions.height);
-                        if (maxDim < 10) { // Small space
+                        if (maxDim < 10) {
                             document.getElementById('box-width').value = Math.min(0.8, result.dimensions.width / 3).toFixed(1);
                             document.getElementById('box-height').value = Math.min(1.0, result.dimensions.height / 3).toFixed(1);
                             document.getElementById('corridor-width').value = '0.8';
@@ -465,9 +467,11 @@
 
                         this.showNotification('success', `Floor plan loaded: ${result.dimensions.width.toFixed(1)}m × ${result.dimensions.height.toFixed(1)}m`);
                     } else {
-                        throw new Error('Upload failed');
+                        const errorData = await response.json();
+                        throw new Error(errorData.error || 'Upload failed');
                     }
                 } catch (error) {
+                    console.error('Upload error:', error);
                     this.showNotification('error', `Upload failed: ${error.message}`);
                     this.hideProgress();
                 }
