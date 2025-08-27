@@ -27,6 +27,10 @@ body {
     background-color: #fafafa;
     color: var(--text-dark);
     line-height: 1.5;
+    overflow-x: hidden;
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
 }
 
 /* Header */
@@ -496,8 +500,8 @@ body {
         position: static;
         margin-bottom: 0.5rem;
         order: 2;
-        max-height: 60vh;
-        overflow-y: auto;
+        max-height: none;
+        overflow-y: visible;
     }
     
     .main-content {
@@ -541,8 +545,8 @@ body {
     
     .sidebar {
         order: 2;
-        max-height: 40vh;
-        overflow-y: auto;
+        max-height: none;
+        overflow-y: visible;
     }
     
     .sidebar-section {
@@ -611,7 +615,7 @@ body {
     }
     
     .sidebar {
-        max-height: 35vh;
+        max-height: none;
     }
     
     .sidebar-section {
